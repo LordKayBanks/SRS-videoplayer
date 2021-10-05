@@ -1,0 +1,64 @@
+.buttons {
+  display: flex;
+  flex-direction: column;
+}
+.horizontal-buttons {
+  flex-direction: row;
+  position: relative;
+  left: -10px;
+}
+
+label {
+  margin: 5px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+}
+svg {
+  padding: 5px;
+  position: relative;
+}
+label * {
+  pointer-events: none;
+}
+label:hover,
+label[data-mode='active'],
+input[type='checkbox']:checked + label {
+  background-color: var(--hover-color);
+}
+label[data-mode='loop'] {
+  background-color: red;
+}
+
+.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+input[type='checkbox']:checked + label > svg {
+  fill: var(--active-fill-color);
+}
+.shuffle {
+  /* display: none; */
+}
+.shuffle svg {
+  padding: 9px;
+}
+.next svg,
+.previous svg {
+  padding: 8px;
+}
+.repeat[data-mode='no-repeat'] {
+  fill: #565656;
+}
+.repeat[data-mode='repeat-all'] path:first-child,
+.repeat[data-mode='no-repeat'] path:first-child {
+  /* display: none; */
+}
+.repeat[data-mode='repeat-one'] path:last-child {
+  /* display: none; */
+}
+
+/* ========== */
+.boost {
+  /* display: none; */
+}
