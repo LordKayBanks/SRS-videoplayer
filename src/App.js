@@ -3,6 +3,9 @@ import './App.css'
 import React, { Component } from 'react'
 
 import Duration from './utility/Duration'
+import FlashMessage from './player/notify'
+// import * as Keyboard from './player/keyboard'
+// import * as Playlist from './player/playlist'
 import ReactPlayer from 'react-player'
 import Toolbar from './components/toolbar'
 import Volume from './components/volume'
@@ -25,7 +28,9 @@ class App extends Component {
     loaded: 0,
     duration: 0,
     playbackRate: 1.0,
-    loop: true
+    loop: true,
+    colorMessage: '',
+    mainMessage: ''
   }
 
   load = url => {
@@ -161,6 +166,7 @@ class App extends Component {
       pip
     } = this.state
     const SEPARATOR = ' · '
+    const turnOffSection = true
 
     return (
       <div className="app">
@@ -193,12 +199,17 @@ class App extends Component {
             onDuration={this.handleDuration}
           />
           <Toolbar></Toolbar>
+          <FlashMessage duration={50000} persistOnHover={true}>
+            <p>{this.state.mainMessage}</p>
+            <p className="color-text">{this.state.colorMessage}</p>
+          </FlashMessage>
+          {/* ;<UseNotify msg={'Yes'} colormsg={'No'} period={5000}></UseNotify> */}
         </div>
-        <section className={`section ${true && 'hide'}`}>
+        <section className={`section ${turnOffSection && 'hide'}`}>
           {/* ======================================================== */}
           {/* ======================================================== */}
 
-          <table className={true && 'hide'}>
+          <table className={turnOffSection && 'hide'}>
             <tbody>
               <tr>
                 <th>Controls</th>
@@ -325,7 +336,7 @@ class App extends Component {
             </tbody>
           </table>
         </section>
-        <section className={`section ${true && 'hide'}`}>
+        <section className={`section ${turnOffSection && 'hide'}`}>
           <table>
             <tbody>
               <tr>
@@ -584,7 +595,7 @@ class App extends Component {
             </tbody>
           </table>
         </section>
-        <footer className={`footer ${true && 'hide'}`}>
+        <footer className={`footer ${turnOffSection && 'hide'}`}>
           {SEPARATOR}
           <a href="https://github.com/CookPete/react-player">GitHub</a>
           {SEPARATOR}

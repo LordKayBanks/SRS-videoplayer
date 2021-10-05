@@ -1,10 +1,10 @@
-import './index.css'
+import './index.scss'
 
 import App from './App'
 import React from 'react'
 import { render } from 'react-dom'
 
-// const App = () => <div>Hello</div>
+// import '../utility/seedData.js';
 
 const container = document.getElementById('root')
 

@@ -36,3 +36,6 @@
   font-size: 11px;
   text-align: center;
 }
+.hide-playlist {
+  visibility: hidden;
+}

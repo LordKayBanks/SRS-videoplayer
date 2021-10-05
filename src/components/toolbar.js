@@ -12,23 +12,25 @@ export default function Toolbar({ files = [], onSelectPlaylistItem = null }) {
   const [sortType, setSortType] = useState('')
 
   return (
-    <div className={`toolbar ${toolbarOpen ? 'toolbar-open' : ''}`}>
+    <div className={`toolbar ${toolbarOpen ? 'toolbar-open' : 'hide-toolbar'}`}>
       {toolbarOpen && <SortingOption setSortType={setSortType} />}
+      <Playlist
+        hidePlaylist={`${toolbarOpen ? '' : 'hide-playlist'}`}
+        files={files}
+        onSelectPlaylistItem={onSelectPlaylistItem}
+      ></Playlist>
+
       {toolbarOpen && (
-        <Playlist
-          files={files}
-          onSelectPlaylistItem={onSelectPlaylistItem}
-        ></Playlist>
+        <input
+          onChange={e => setVideolink(e.target.value)}
+          value={videolink}
+          id="external-link"
+          type="text"
+          className="external-link"
+          placeholder="Paste link here..."
+          name="text"
+        />
       )}
-      <input
-        onChange={e => setVideolink(e.target.value)}
-        value={videolink}
-        id="external-link"
-        type="text"
-        className="external-link"
-        placeholder="Paste link here..."
-        name="text"
-      />
       <Buttons
         horizontalButtons={`${toolbarOpen ? 'horizontal-buttons' : ''}`}
         boost={2}

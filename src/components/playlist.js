@@ -2,9 +2,9 @@ import './playlist.css'
 
 import React from 'react'
 
-export default function Playlist() {
+export default function Playlist({ hidePlaylist }) {
   return (
-    <ul className="playlist">
+    <ul className={`playlist ${hidePlaylist}`}>
       <li title="undefined" class="">
         <span data-id="name">
           27-1. Introduction to Explain VLAN Concepts and Configure VLANs on a

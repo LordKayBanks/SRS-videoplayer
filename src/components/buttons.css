@@ -10,7 +10,7 @@
 
 label {
   margin: 5px;
-  border-radius: 50%;
+  border-radius: 20%;
   cursor: pointer;
   display: flex;
 }
