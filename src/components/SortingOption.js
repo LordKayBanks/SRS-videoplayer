@@ -12,9 +12,12 @@ export default function Selectsortingoption({ setSortType }) {
         onChange={e => setSortType(e.target.value)}
       >
         <optgroup>
-          <option value="time-descending" selected="selected">
-            Time descending
+          <option value="playlist" selected="selected">
+            Standard Playlist
           </option>
+        </optgroup>
+        <optgroup>
+          <option value="time-descending">Time descending</option>
           <option value="time-ascending">Time ascending</option>
         </optgroup>
         <optgroup>

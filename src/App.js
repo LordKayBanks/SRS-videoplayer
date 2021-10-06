@@ -11,13 +11,14 @@ import Volume from './components/volume'
 import { findDOMNode } from 'react-dom'
 import { hot } from 'react-hot-loader'
 import screenfull from 'screenfull'
-import DragAndDrop from './components/DragAndDrop'
 
 class App extends Component {
   state = {
     //  url: null,
-    //  url: 'https://www.youtube.com/watch?v=oUFJJNQGwhk',
-    url: 'https://vimeo.com/90509568',
+    url: 'https://www.youtube.com/watch?v=oUFJJNQGwhk',
+    //  url: 'https://vimeo.com/90509568',
+    //  url:
+    //    '"/Users/kaybanks/Downloads/~temp/Udemy- React, React Redux and Redux Saga- Master React StateHooks 2021-2 [6h-55m]/08 Creating our _Backend API_ using json-server [0h-12m]/059 Understanding the json-server backend.mp4"',
     pip: false,
     playing: true,
     controls: true,
@@ -34,15 +35,14 @@ class App extends Component {
     files: []
   }
 
-  handleDrop = files => {
-    let fileList = this.state.files
-
-    for (var i = 0; i < files.length; i++) {
-      if (!files[i].name) return
-      fileList.push(files[i].name)
-    }
-
-    this.setState({ files: fileList })
+  test = url => {
+    console.error('🚀 🚀 🚀 IN-url', url)
+    this.setState(
+      {
+        url
+      },
+      () => console.error('🚀 🚀 🚀 url-SET', url)
+    )
   }
 
   load = url => {
@@ -99,22 +99,22 @@ class App extends Component {
   }
 
   handlePlay = () => {
-    console.log('onPlay')
+    //  console.log('onPlay')
     this.setState({ playing: true })
   }
 
   handleEnablePIP = () => {
-    console.log('onEnablePIP')
+    //  console.log('onEnablePIP')
     this.setState({ pip: true })
   }
 
   handleDisablePIP = () => {
-    console.log('onDisablePIP')
+    //  console.log('onDisablePIP')
     this.setState({ pip: false })
   }
 
   handlePause = () => {
-    console.log('onPause')
+    //  console.log('onPause')
     this.setState({ playing: false })
   }
 
@@ -132,7 +132,7 @@ class App extends Component {
   }
 
   handleProgress = state => {
-    console.log('onProgress', state)
+    //  console.log('onProgress', state)
 
     // We only want to update time slider if we are not currently seeking
     if (!this.state.seeking) {
@@ -141,12 +141,12 @@ class App extends Component {
   }
 
   handleEnded = () => {
-    console.log('onEnded')
+    //  console.log('onEnded')
     this.setState({ playing: this.state.loop })
   }
 
   handleDuration = duration => {
-    console.log('onDuration', duration)
+    //  console.log('onDuration', duration)
     this.setState({ duration })
   }
 
@@ -221,16 +221,20 @@ class App extends Component {
             onError={e => console.log('onError', e)}
             onProgress={this.handleProgress}
             onDuration={this.handleDuration}
+            config={{
+              youtube: {
+                playerVars: {
+                  showinfo: 1,
+                  // disablekb: 1,
+                  iv_load_policy: 3,
+                  modestbranding: 1,
+                  rel: 0
+                }
+              }
+            }}
           />
-          {/* <DragAndDrop handleDrop={this.handleDrop}>
-            <div style={this.style}>
-              {this.state.files.map((file, i) => (
-                <div key={i}>{file}</div>
-              ))}
-            </div>
-          </DragAndDrop> */}
 
-          <Toolbar files={this.state.files} notify={this.notify}></Toolbar>
+          <Toolbar playNewVideo={this.test} notify={this.notify}></Toolbar>
           <FlashMessage duration={50000} persistOnHover={true}>
             <p>{this.state.message.mainMessage}</p>
             <p className="color-text">{this.state.message.colorMessage}</p>

@@ -16,7 +16,9 @@
     "react-hot-loader": "^4.13.0",
     "react-player": "^2.9.0",
     "react-scripts": "4.0.1",
+    "rxjs": "^7.3.1",
     "screenfull": "^5.1.0",
+    "uuidv4": "^6.2.12",
     "web-vitals": "^0.2.4"
   },
   "main": "public/main.js",

@@ -1,15 +1,16 @@
 .buttons {
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 .horizontal-buttons {
   flex-direction: row;
   position: relative;
-  left: -10px;
+  left: -6px;
 }
 
 label {
-  margin: 5px;
+  /* margin: 5px; */
   border-radius: 20%;
   cursor: pointer;
   display: flex;

@@ -1,4 +1,5 @@
-import * as utility from '../utility/index.js'
+import * as utility from './index.js'
+import { uuid } from 'uuidv4'
 
 export const playlistCreator = {
   PlayerState: {
@@ -42,18 +43,23 @@ export const playlistCreator = {
       //  } else notify.display('no playlist saved!')
     }
   },
-  loadVideo(files) {
-    playlistCreator.cueVideo(files)
+  loadVideo(files, isNewFiles = true) {
+    playlistCreator.cueVideo(files, isNewFiles)
   },
   cueVideo(files, isNewFiles = true) {
     playlistCreator.entries.push(...files)
 
     if (isNewFiles) {
-      const temp = [...files].map(({ name, path, type, e }) => ({
-        name,
-        path,
-        type
-      }))
+      const temp = [...files].map(({ name, path, type, e }) => {
+        let uniqueId = uuid()
+
+        return {
+          name,
+          path,
+          type,
+          id: uniqueId
+        }
+      })
 
       temp.push(utility.categorySeparator)
 
@@ -63,10 +69,7 @@ export const playlistCreator = {
       localStorage.setItem('playlist', JSON.stringify(newPlaylist))
     }
 
-    console.log(
-      '🚀 ~ file: playlistCreator.js ~ line 49 ~ cueVideo ~ files',
-      files
-    )
+    //  console.log('🚀 files', files)
   },
   onStateChange(c) {
     playlistCreator.onStateChange.cs.push(c)

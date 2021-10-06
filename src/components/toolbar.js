@@ -7,34 +7,43 @@ import Playlist from './playlist'
 import SortingOption from './SortingOption'
 
 export default function Toolbar({
-  files = [],
   notify,
+  playNewVideo,
   onSelectPlaylistItem = null
 }) {
-  //   console.error('🚀 ~ file: toolbar.js ~ line 14 ~ files', files)
-
   const [toolbarOpen, setToolbarOpen] = useState(true)
-  const [videolink, setVideolink] = useState('')
-  const [sortType, setSortType] = useState('')
+  const [sortType, setSortType] = useState('playlist')
+
+  function onAddNewURL(e) {
+    if (e.key === 'Enter') {
+      playNewVideo(e.target.value)
+    }
+  }
+
+  function handlePlay(url) {
+    playNewVideo(url)
+  }
 
   return (
     <div className={`toolbar ${toolbarOpen ? 'toolbar-open' : 'hide-toolbar'}`}>
       {toolbarOpen && <SortingOption setSortType={setSortType} />}
       <Playlist
+        handlePlay={handlePlay}
+        sortType={sortType}
         hidePlaylist={`${toolbarOpen ? '' : 'hide-playlist'}`}
-        files={files}
         notify={notify}
         onSelectPlaylistItem={onSelectPlaylistItem}
       ></Playlist>
 
       {toolbarOpen && (
         <input
-          onChange={e => setVideolink(e.target.value)}
-          value={videolink}
+          //  onKeyDown={onAddNewURL}
+          //  onKeyDown={e => playNewVideo(e.target.value)}
+          onKeyDown={onAddNewURL}
           id="external-link"
           type="text"
           className="external-link"
-          placeholder="Paste link here..."
+          placeholder="Paste link here...or drag and drop"
           name="text"
         />
       )}

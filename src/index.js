@@ -10,14 +10,11 @@ import { render } from 'react-dom'
 // import './storage.js'
 // import './keyboard.js'
 
-// import drag from './player/drag'
-// import playlist from './components/playlist'
+import './utility/seedData.js'
 import { keepTrackOfReviews } from './utility/startup'
 
 keepTrackOfReviews()
-// drag.onDrag(files => playlist.loadVideo(files))
 
-// import '../utility/seedData.js';
 // ===============================
 
 const container = document.getElementById('root')

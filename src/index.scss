@@ -86,3 +86,8 @@ body[data-state='-1'] video {
     font-weight: bold;
   }
 }
+
+// document.querySelector("#movie_player > div.ytp-chrome-top.ytp-show-cards-title")
+#movie_player > div.ytp-chrome-top.ytp-show-cards-title {
+  display: none !important;
+}
