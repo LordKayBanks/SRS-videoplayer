@@ -10,8 +10,6 @@ import {
 /* global MediaMetadata */
 import notify from './notify.js'
 
-// import '../utility/seedData.js';
-
 const root = document.getElementById('playlist')
 const video = document.querySelector('video')
 const next = document.getElementById('next')
@@ -44,8 +42,6 @@ const scrollIntoView = e => {
     e.scrollIntoView()
   }
 }
-
-export const categorySeparator = { name: ' ', path: '', type: 'separator' }
 
 let isReviewing = false
 let unsubscribeToReview = null
@@ -233,7 +229,7 @@ export const playlist = {
         type
       }))
 
-      temp.push(categorySeparator)
+      temp.push(utility.categorySeparator)
 
       const oldPlaylist = JSON.parse(localStorage.getItem('playlist')) || []
       const newPlaylist = [...oldPlaylist, ...temp]

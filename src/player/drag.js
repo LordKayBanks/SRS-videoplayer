@@ -5,12 +5,10 @@ const drag = {
   }
 }
 
-const drop = async es => {
+export const drop = async (es, loadFiles) => {
   //   absolutePath: new URL(`file:///${entry.path}`).href;
-
   let files = []
   const entries = es
-
     .map(f =>
       f.webkitGetAsEntry
         ? f.webkitGetAsEntry()
@@ -69,46 +67,41 @@ const drop = async es => {
   //     b.name.localeCompare(a.name)
   //   );
   if (files.length) {
-    for (const c of drag.cs) {
-      c(files)
-    }
+    //  for (const c of drag.cs) {
+    //    c(files)
+    //  }
+
+    loadFiles(files)
   }
 }
 
-document.addEventListener('drop', e => {
-  e.preventDefault()
-  drop([...e.dataTransfer.items])
-})
-
-document.addEventListener('dragover', e => e.preventDefault())
-
-const container = document.getElementById('video-container')
-
-container.addEventListener('dblclick', e => {
-  if (e.target === container) {
-    const input = document.createElement('input')
-
-    input.type = 'file'
-    input.multiple = true
-    input.accept = 'video/*, audio/*'
-
-    input.onchange = () => {
-      if (input.files.length) {
-        drop([...input.files])
-      }
-    }
-
-    input.click()
-  }
-})
-
-document.getElementById('external-link').addEventListener('change', e => {
-  e.preventDefault()
-
-  const video = document.querySelector('video')
-
-  video.src = e.target.value
-  console.log(e.target.value)
-})
-
 export default drag
+
+function setUpFileUpload() {
+  document.addEventListener('drop', e => {
+    e.preventDefault()
+    drop([...e.dataTransfer.items])
+  })
+
+  document.addEventListener('dragover', e => e.preventDefault())
+
+  const container = document.getElementById('video-container')
+
+  container.addEventListener('dblclick', e => {
+    if (e.target === container) {
+      const input = document.createElement('input')
+
+      input.type = 'file'
+      input.multiple = true
+      input.accept = 'video/*, audio/*'
+
+      input.onchange = () => {
+        if (input.files.length) {
+          drop([...input.files])
+        }
+      }
+
+      input.click()
+    }
+  })
+}

@@ -6,7 +6,13 @@ import Buttons from './buttons'
 import Playlist from './playlist'
 import SortingOption from './SortingOption'
 
-export default function Toolbar({ files = [], onSelectPlaylistItem = null }) {
+export default function Toolbar({
+  files = [],
+  notify,
+  onSelectPlaylistItem = null
+}) {
+  //   console.error('🚀 ~ file: toolbar.js ~ line 14 ~ files', files)
+
   const [toolbarOpen, setToolbarOpen] = useState(true)
   const [videolink, setVideolink] = useState('')
   const [sortType, setSortType] = useState('')
@@ -17,6 +23,7 @@ export default function Toolbar({ files = [], onSelectPlaylistItem = null }) {
       <Playlist
         hidePlaylist={`${toolbarOpen ? '' : 'hide-playlist'}`}
         files={files}
+        notify={notify}
         onSelectPlaylistItem={onSelectPlaylistItem}
       ></Playlist>
 

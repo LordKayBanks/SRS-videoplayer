@@ -4,14 +4,14 @@ import React, { Component } from 'react'
 
 import Duration from './utility/Duration'
 import FlashMessage from './player/notify'
-// import * as Keyboard from './player/keyboard'
-// import * as Playlist from './player/playlist'
+
 import ReactPlayer from 'react-player'
 import Toolbar from './components/toolbar'
 import Volume from './components/volume'
 import { findDOMNode } from 'react-dom'
 import { hot } from 'react-hot-loader'
 import screenfull from 'screenfull'
+import DragAndDrop from './components/DragAndDrop'
 
 class App extends Component {
   state = {
@@ -29,8 +29,20 @@ class App extends Component {
     duration: 0,
     playbackRate: 1.0,
     loop: true,
-    colorMessage: '',
-    mainMessage: ''
+    message: { colorMessage: '', mainMessage: '' },
+
+    files: []
+  }
+
+  handleDrop = files => {
+    let fileList = this.state.files
+
+    for (var i = 0; i < files.length; i++) {
+      if (!files[i].name) return
+      fileList.push(files[i].name)
+    }
+
+    this.setState({ files: fileList })
   }
 
   load = url => {
@@ -150,6 +162,18 @@ class App extends Component {
     this.player = player
   }
 
+  notify = ({ mainMessage, colorMessage }) => {
+    this.setState({ message: { mainMessage, colorMessage } })
+  }
+
+  style = {
+    position: 'absolute',
+    left: '-886px',
+    height: '300px',
+    width: '250px',
+    background: ' #a58181'
+  }
+
   render() {
     const {
       url,
@@ -198,12 +222,19 @@ class App extends Component {
             onProgress={this.handleProgress}
             onDuration={this.handleDuration}
           />
-          <Toolbar></Toolbar>
+          {/* <DragAndDrop handleDrop={this.handleDrop}>
+            <div style={this.style}>
+              {this.state.files.map((file, i) => (
+                <div key={i}>{file}</div>
+              ))}
+            </div>
+          </DragAndDrop> */}
+
+          <Toolbar files={this.state.files} notify={this.notify}></Toolbar>
           <FlashMessage duration={50000} persistOnHover={true}>
-            <p>{this.state.mainMessage}</p>
-            <p className="color-text">{this.state.colorMessage}</p>
+            <p>{this.state.message.mainMessage}</p>
+            <p className="color-text">{this.state.message.colorMessage}</p>
           </FlashMessage>
-          {/* ;<UseNotify msg={'Yes'} colormsg={'No'} period={5000}></UseNotify> */}
         </div>
         <section className={`section ${turnOffSection && 'hide'}`}>
           {/* ======================================================== */}
