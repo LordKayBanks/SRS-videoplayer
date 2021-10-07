@@ -52,7 +52,7 @@ function getVideoData$(ytId) {
   })
 }
 
-function parseYoutubeUrl(url) {
+export function parseYoutubeUrl(url) {
   var p = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/
   let urlMatch = url.match(p)
 

@@ -1,9 +1,10 @@
 import './playlist.scss'
 
-import getVideoDataFromUrl from '../utility/youtube'
+import { parseYoutubeUrl } from '../utility/youtube'
 
 import React, { Component } from 'react'
 import { uuid } from 'uuidv4'
+import axios from 'axios'
 
 import { drop } from '../player/drag'
 import playlistCreator from '../utility/playlistCreator'
@@ -11,9 +12,9 @@ import playlistCreator from '../utility/playlistCreator'
 class Playlist extends Component {
   state = {
     drag: false,
-    dragClassName: '',
-    playlist: [],
-    currentlyPlaying: null
+    dragClassName: ''
+    //  playlist: [],
+    //  currentlyPlaying: null
   }
 
   dropRef = React.createRef()
@@ -49,6 +50,7 @@ class Playlist extends Component {
   componentWillUnmount() {
     let div = this.dropRef.current
 
+    if (!div) return
     div.removeEventListener('dragstart', this.handleTextDropStart)
     div.removeEventListener('drop', this.handleTextDrop)
 
@@ -72,6 +74,14 @@ class Playlist extends Component {
     }
   }
 
+  getMetadata = async url => {
+    const videoUrl = url
+    const requestUrl = `http://youtube.com/oembed?url=${videoUrl}&format=json`
+    const result = await axios.get(requestUrl)
+
+    return result.data
+  }
+
   handleTextDrop = async event => {
     if (event.dataTransfer) {
       let videoURL = event.dataTransfer.getData('Text')
@@ -83,23 +93,26 @@ class Playlist extends Component {
           type: 'external',
           id: uuid()
         }
-        const videoInfo = await getVideoDataFromUrl(videoURL)
 
-        if (videoInfo)
-          playlistItem = {
-            name: videoInfo.title,
-            path: videoURL,
-            type: 'external',
-            id: uuid()
-          }
+        if (parseYoutubeUrl(videoURL)) {
+          const videoInfo = await this.getMetadata(videoURL)
+
+          if (videoInfo)
+            playlistItem = {
+              name: videoInfo.title,
+              path: videoURL,
+              type: 'video/external',
+              id: uuid(),
+              author: videoInfo.author_name,
+              source: videoInfo.provider_name
+            }
+        }
 
         playlistCreator.loadVideo([playlistItem])
-
-        this.setState(
+        this.props.setPlaylist(
           {
             playlist: playlistCreator.entries,
-            currentlyPlaying: playlistItem.id,
-            dragClassName: ''
+            currentlyPlaying: playlistItem.id
           },
           () => {
             this.props.handlePlay(playlistItem.path)
@@ -107,6 +120,9 @@ class Playlist extends Component {
             //  this.props.handlePlay(videoURL)
           }
         )
+        this.setState({
+          dragClassName: ''
+        })
       }
     } //else ... Some (less modern) browsers don't support dataTransfer objects.
     // =======================
@@ -157,23 +173,26 @@ class Playlist extends Component {
       drop([...e.dataTransfer.items], playlistCreator.loadVideo)
       e.dataTransfer.clearData()
       this.dragCounter = 0
-      this.setState({ playlist: playlistCreator.entries })
+      this.props.setPlaylist({ playlist: playlistCreator.entries }, () => {})
+      // this.setState({ playlist: playlistCreator.entries })
       // console.log('🚀playlistCreator.entries', playlistCreator.entries)
     }
   }
 
   loadReviews = () => {
     playlistCreator.loadReviews(this.props.sortType)
-    this.setState({ playlist: playlistCreator.entries }, () => {
-      // console.log('🚀 Reviews', this.state.playlist)
-    })
+    this.props.setPlaylist({ playlist: playlistCreator.entries }, () => {})
+    //  this.setState({ playlist: playlistCreator.entries }, () => {
+    //    // console.log('🚀 Reviews', this.state.playlist)
+    //  })
   }
 
   loadPlaylist = () => {
     playlistCreator.loadPlaylistFromStorage()
-    this.setState({ playlist: playlistCreator.entries }, () => {
-      // console.log('🚀 Playlist', this.state.playlist)
-    })
+    this.props.setPlaylist({ playlist: playlistCreator.entries }, () => {})
+    //  this.setState({ playlist: playlistCreator.entries }, () => {
+    //    // console.log('🚀 Playlist', this.state.playlist)
+    //  })
   }
 
   buildPlaylist(files) {
@@ -190,18 +209,25 @@ class Playlist extends Component {
           key={file.id}
           id={file.id}
           className={`${fileSeparator} ${
-            index === this.state.currentlyPlaying ? 'active' : ''
+            // index === this.state.currentlyPlaying ? 'active' : ''
+            index === this.props.currentlyPlaying ? 'active' : ''
           }`}
           //  className={index === this.state.currentlyPlaying ? 'active' : ''}
           title={title}
           disabled={isDisabled}
           onClick={e => {
-            this.setState({ currentlyPlaying: index }, () => {
+            this.props.setPlaylist({ currentlyPlaying: index }, () => {
               this.props.handlePlay(file.path)
               console.log('1================================================')
               console.log('🚀 ~ file: file.path', file.path)
               console.log('2================================================')
             })
+            // this.setState({ currentlyPlaying: index }, () => {
+            //   this.props.handlePlay(file.path)
+            //   console.log('1================================================')
+            //   console.log('🚀 ~ file: file.path', file.path)
+            //   console.log('2================================================')
+            // })
           }}
         >
           <span className="video-title">{`${file.name}` || `${file.src}`}</span>
@@ -222,7 +248,8 @@ class Playlist extends Component {
         //   ref={this.dropRef}
         ref={this.props.sortType === 'playlist' ? this.dropRef : null}
       >
-        {this.buildPlaylist(this.state.playlist)}
+        {/* {this.buildPlaylist(this.state.playlist)} */}
+        {this.buildPlaylist(this.props.playlist)}
       </ul>
     )
   }

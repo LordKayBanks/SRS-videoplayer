@@ -129,9 +129,13 @@ export function sortReviews(reviews, sortCriteria) {
     }
   }
 
+  log(temp)
+
   //   console.error('🚀 sortReviews ~ temp', temp);
   return result
 }
+
+const log = temp => temp
 
 export function groupReviewsBy({
   reviews,
@@ -202,7 +206,7 @@ export function dateToDescription(myDate) {
 }
 
 export function getFileDirectory(filePath) {
-  if (filePath.indexOf('/') == -1) {
+  if (filePath.indexOf('/') === -1) {
     // windows
     return filePath.substring(0, filePath.lastIndexOf('\\'))
   } else {
@@ -214,11 +218,64 @@ export function getFileDirectory(filePath) {
 export function getFileParentDirectory(path) {
   let filePath = getFileDirectory(path)
 
-  if (filePath.indexOf('/') == -1) {
+  if (filePath.indexOf('/') === -1) {
     // windows
     return filePath.substring(0, filePath.lastIndexOf('\\'))
   } else {
     // unix
     return filePath.substring(0, filePath.lastIndexOf('/'))
+  }
+}
+
+export const scrollIntoView = (elementRef, playlistRef) => {
+  const rect = elementRef.getBoundingClientRect()
+
+  if (rect.top < 0 || rect.bottom > playlistRef.clientHeight) {
+    elementRef.scrollIntoView()
+  }
+}
+
+export const toMinutesSeconds = (seconds, getFullFormat = true) => {
+  const format = val => `0${Math.floor(val)}`.slice(-2)
+  const hours = seconds / 3600
+  const minutes = (seconds % 3600) / 60
+
+  const fullFormat = [hours, minutes, seconds % 60].map(format).join(':')
+  const hourMinuteOnlyFormat = [hours, minutes].map(format).join(':')
+
+  return getFullFormat ? fullFormat : hourMinuteOnlyFormat
+}
+
+export const getVideoSplitFactor = duration => {
+  let videoSplit
+
+  if (duration >= 30 * 60) videoSplit = 8
+  else if (duration >= 20 * 60) videoSplit = 6
+  else if (duration >= 10 * 60) videoSplit = 4
+  else if (duration >= 5 * 60) videoSplit = 2
+  else videoSplit = 1
+
+  return videoSplit
+}
+
+export const convertToNearest30 = num => Math.round(num / 30) * 30
+export const convertToNearestX = (num, X) => Math.floor(num / X) * X
+
+export const handleMultipleKeyPress = (actionOne, actionTwo) => {
+  const multipleKeysMap = {}
+
+  return evt => {
+    let { keyCode, type } = evt || Event // to deal with IE
+    let isKeyDown = type === 'keydown'
+
+    multipleKeysMap[keyCode] = isKeyDown
+
+    if (isKeyDown && this.multipleKeysMap[8] && this.multipleKeysMap[189]) {
+      //   backspace & Minus
+      actionOne()
+    } else if (isKeyDown && multipleKeysMap[8] && multipleKeysMap[187]) {
+      //   backspace & Equal
+      actionTwo()
+    }
   }
 }

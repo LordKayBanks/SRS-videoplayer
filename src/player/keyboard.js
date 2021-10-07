@@ -64,9 +64,9 @@ const seekToTime = function (value) {
 
   video.currentTime = seekToTime
   notify.display(
-    `Current Position: <${toMinutesandSeconds(
+    `Current Position: <${toMinutesSeconds(
       video.currentTime
-    )}> of <${toMinutesandSeconds(video.duration)}>`
+    )}> of <${toMinutesSeconds(video.duration)}>`
   )
 }
 
@@ -103,9 +103,9 @@ function notifyReplayStatus() {
     `Video Stats: Split watch count:: ${videoStat ?? 0} times!
     \r\nReplay: is ${
       !!replayConfig.unsubscribe ? 'ON!:' : 'OFF!:'
-    }\r\nStart Time: ${toMinutesandSeconds(
+    }\r\nStart Time: ${toMinutesSeconds(
       replayConfig.startPosition
-    )}\r\nEnd Time:  ${toMinutesandSeconds(replayConfig.endPosition)}`,
+    )}\r\nEnd Time:  ${toMinutesSeconds(replayConfig.endPosition)}`,
     `\r\nPosition:   [${currentSplit}] of [${totalSplit}]`,
     20000
   )
@@ -324,7 +324,7 @@ function alertAtKeyMoments() {
 
       notify.display(
         `Alert:\r\nJust Past 25%`,
-        `\r\n[${toMinutesandSeconds(remainTime, false)}]`
+        `\r\n[${toMinutesSeconds(remainTime, false)}]`
       )
       clearInterval(alertConfig.alertConfigOneThirdTime)
     }
@@ -342,7 +342,7 @@ function alertAtKeyMoments() {
 
       notify.display(
         `Alert:\r\nJust Past 50%`,
-        `\r\n[${toMinutesandSeconds(remainTime, false)}]`
+        `\r\n[${toMinutesSeconds(remainTime, false)}]`
       )
       clearInterval(alertConfig.alertConfigMidwayTime)
     }
@@ -363,14 +363,14 @@ function alertAtKeyMoments() {
 
       notify.display(
         `Alert:\r\nJust Past 75%`,
-        `\r\n[${toMinutesandSeconds(remainTime, false)}]`
+        `\r\n[${toMinutesSeconds(remainTime, false)}]`
       )
       clearInterval(alertConfig.alertConfigTwoThirdTime)
     }
   }, 2000)
 }
 
-function toMinutesandSeconds(seconds, getFullFormat = true) {
+function toMinutesSeconds(seconds, getFullFormat = true) {
   const format = val => `0${Math.floor(val)}`.slice(-2)
   const hours = seconds / 3600
   const minutes = (seconds % 3600) / 60
@@ -918,7 +918,7 @@ video.addEventListener('loadeddata', () => {
 
   const videoTitle = `${video.origin?.name}  `
 
-  notify.display(videoTitle, `[${toMinutesandSeconds(video.duration)}]`)
+  notify.display(videoTitle, `[${toMinutesSeconds(video.duration)}]`)
 })
 
 // video.addEventListener('timeupdate', detectBackwardSkipSeek);

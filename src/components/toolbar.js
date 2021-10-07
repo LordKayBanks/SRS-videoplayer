@@ -9,7 +9,11 @@ import SortingOption from './SortingOption'
 export default function Toolbar({
   notify,
   playNewVideo,
-  onSelectPlaylistItem = null
+  setPlaylist,
+  playlist,
+  onSelectPlaylistItem = null,
+  handlePrevious,
+  handleNext
 }) {
   const [toolbarOpen, setToolbarOpen] = useState(true)
   const [sortType, setSortType] = useState('playlist')
@@ -28,6 +32,8 @@ export default function Toolbar({
     <div className={`toolbar ${toolbarOpen ? 'toolbar-open' : 'hide-toolbar'}`}>
       {toolbarOpen && <SortingOption setSortType={setSortType} />}
       <Playlist
+        setPlaylist={setPlaylist}
+        playlist={playlist}
         handlePlay={handlePlay}
         sortType={sortType}
         hidePlaylist={`${toolbarOpen ? '' : 'hide-playlist'}`}
@@ -37,8 +43,6 @@ export default function Toolbar({
 
       {toolbarOpen && (
         <input
-          //  onKeyDown={onAddNewURL}
-          //  onKeyDown={e => playNewVideo(e.target.value)}
           onKeyDown={onAddNewURL}
           id="external-link"
           type="text"
@@ -60,8 +64,8 @@ export default function Toolbar({
         changeRepeatMode={() => {}}
         changeSpeed={() => {}}
         changeBoost={() => {}}
-        previousVideo={() => {}}
-        nextVideo={() => {}}
+        previousVideo={handlePrevious}
+        nextVideo={handleNext}
       ></Buttons>
     </div>
   )
