@@ -2,17 +2,13 @@ import * as utility from './index.js'
 import { uuid } from 'uuidv4'
 
 export const playlistCreator = {
+    entries: [],
     loadReviews(sortOptions) {
         let reviews = JSON.parse(localStorage.getItem('reviews'))
 
         reviews = utility.sortReviews(reviews, sortOptions)
 
-        //  console.log('🚀 reviews', reviews);
-        if (!reviews || !reviews.length) {
-            // notify.display('no reviews available!')
-
-            return false
-        }
+        if (!reviews || !reviews.length) return []
 
         playlistCreator.entries = []
         playlistCreator.cueVideo(reviews, false)
@@ -24,10 +20,7 @@ export const playlistCreator = {
 
         const files = JSON.parse(localStorage.getItem('playlist'))
 
-        if (files) {
-            playlistCreator.cueVideo(files, false)
-            //  } else notify.display('no playlist saved!')
-        }
+        if (files) playlistCreator.cueVideo(files, false)
     },
     loadVideo(files = [], isNewFiles = true) {
         playlistCreator.cueVideo(files, isNewFiles)
@@ -58,11 +51,7 @@ export const playlistCreator = {
         }
 
         //  console.log('🚀 files', files)
-    },
-    onStateChange(c) {
-        playlistCreator.onStateChange.cs.push(c)
     }
 }
-playlistCreator.onStateChange.cs = []
 
 export default playlistCreator

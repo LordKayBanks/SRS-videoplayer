@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 
 import Buttons from './buttons'
 import Playlist from './playlist'
-import SortingOption from './SortingOption'
+import SelectSortingOption from './SortingOption'
 
 export default function Toolbar({
   notify,
@@ -31,7 +31,7 @@ export default function Toolbar({
 
   return (
     <div className={`toolbar ${toolbarOpen ? 'toolbar-open' : 'hide-toolbar'}`}>
-      {toolbarOpen && <SortingOption setSortType={setSortType} />}
+      {toolbarOpen && <SelectSortingOption setSortType={setSortType} />}
       <Playlist
         setPlaylist={setPlaylist}
         playlist={playlist}

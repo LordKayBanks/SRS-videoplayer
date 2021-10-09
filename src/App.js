@@ -239,22 +239,46 @@ class App extends Component {
         )
     }
 
-    setPlaylist = (items = [], callback) => {
+    setPlaylist = (items = [], isReview, callback = () => {}) => {
         if (!items.length) return
 
-        const currentPlaylist = this.state.playlist
-        const newPlaylist = [...currentPlaylist, ...items]
-        let index = 0
-        let nextItemToPlay = items[index]
+        let currentlyPlaying
+        let newPlaylist
+        let nextItemToPlay
 
-        while (nextItemToPlay?.type === 'separator') {
+        if (isReview) {
+            newPlaylist = [...items]
+
+            let index = 0
+
+            nextItemToPlay = newPlaylist[index]
+
+            while (nextItemToPlay?.type === 'separator') {
+                nextItemToPlay = newPlaylist[index]
+                index = index + 1
+            }
+
+            currentlyPlaying = newPlaylist.find(
+                item => item.id === nextItemToPlay.id
+            )
+        } else {
+            const currentPlaylist = this.state.playlist
+
+            newPlaylist = [...currentPlaylist, ...items]
+
+            let index = 0
+
             nextItemToPlay = items[index]
-            index = index + 1
-        }
 
-        const currentlyPlaying = newPlaylist.find(
-            item => item.id === nextItemToPlay.id
-        )
+            while (nextItemToPlay?.type === 'separator') {
+                nextItemToPlay = items[index]
+                index = index + 1
+            }
+
+            currentlyPlaying = newPlaylist.find(
+                item => item.id === nextItemToPlay.id
+            )
+        }
 
         this.setState(
             {

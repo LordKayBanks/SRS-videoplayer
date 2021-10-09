@@ -174,36 +174,25 @@ class Playlist extends Component {
             e.dataTransfer.clearData()
             this.dragCounter = 0
             this.props.setPlaylist(playlistCreator.entries, () => {})
-            // this.setState({ playlist: playlistCreator.entries })
-            // console.log('🚀playlistCreator.entries', playlistCreator.entries)
         }
     }
 
     loadReviews = () => {
         playlistCreator.loadReviews(this.props.sortType)
-        this.props.setPlaylist(playlistCreator.entries, () => {})
-        //  this.setState({ playlist: playlistCreator.entries }, () => {
-        //    // console.log('🚀 Reviews', this.state.playlist)
-        //  })
+        this.props.setPlaylist(playlistCreator.entries, true)
     }
 
     loadPlaylist = () => {
         playlistCreator.loadPlaylistFromStorage()
-        this.props.setPlaylist(playlistCreator.entries, () => {})
-        //  this.setState({ playlist: playlistCreator.entries }, () => {
-        //    // console.log('🚀 Playlist', this.state.playlist)
-        //  })
+        this.props.setPlaylist(playlistCreator.entries, false)
     }
 
     render() {
         return (
             <ul
                 className={`playlist ${this.props.hidePlaylist} ${this.state.dragClassName}`}
-                //   ref={this.dropRef}
                 ref={this.props.sortType === 'playlist' ? this.dropRef : null}
             >
-                {/* {this.buildPlaylist(this.state.playlist)} */}
-                {/* {this.buildPlaylist(this.props.playlist)} */}
                 <BuildPlaylist
                     files={this.props.playlist}
                     currentlyPlaying={this.props.currentlyPlaying}

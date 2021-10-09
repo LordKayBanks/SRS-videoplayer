@@ -2,7 +2,7 @@ import './SortingOption.css'
 
 import React from 'react'
 
-export default function Selectsortingoption({ setSortType }) {
+export default function SelectSortingOption({ setSortType }) {
   return (
     <div className="review-sort-options-container">
       <section className="sort-text">Sortby:</section>
