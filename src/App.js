@@ -7,35 +7,35 @@ import {
     getVideoSplitFactor,
     toMinutesSeconds
 } from './utility/index'
+import ReactNotification, { store } from 'react-notifications-component'
+import 'react-notifications-component/dist/theme.css'
 
-import Duration from './utility/Duration'
-import FlashMessage from './player/notify'
 import ReactPlayer from 'react-player'
 import Toolbar from './components/toolbar'
-import Volume from './components/volume'
 import { findDOMNode } from 'react-dom'
 import { hot } from 'react-hot-loader'
 import screenfull from 'screenfull'
 
 class App extends Component {
     state = {
-        url: 'https://www.youtube.com/watch?v=oUFJJNQGwhk',
+        // url: 'https://www.youtube.com/watch?v=oUFJJNQGwhk',
+        url: null,
         pip: false,
         playing: true,
         controls: true,
         light: false,
-        volume: 0.8,
+        volume: 1,
         muted: true,
         played: 0,
         loaded: 0,
         duration: 0,
         currentTime: 0,
-        playbackRate: 5.0,
+        playbackRate: 10,
         loop: false,
         //  ======================
-        message: { colorMessage: '', mainMessage: '' },
+        // message: { colorMessage: '', mainMessage: '' },
         playlist: [],
-        repeatMode: 'repeat-all',
+        repeatMode: 'repeat-one',
         currentlyPlaying: '',
         title: '',
         videoFormat: '',
@@ -43,7 +43,47 @@ class App extends Component {
         reviewRangeStart: 0,
         reviewRangeEnd: 0,
         trackingModeState: 'inactive'
-        //  ===================
+    }
+
+    notify = ({ mainMessage = 'SR-Videoplayer', colorMessage = '' }) => {
+        store.addNotification({
+            title: mainMessage,
+            message: colorMessage,
+            type: 'success',
+            insert: 'top',
+            container: 'top-left',
+            animationIn: ['animate__animated', 'animate__fadeIn'],
+            animationOut: ['animate__animated', 'animate__fadeOut'],
+            dismiss: {
+                duration: 10000,
+                onScreen: true
+            }
+        })
+    }
+
+    toggleRepeatMode = () => {
+        const NO_REPEAT_MODE = 'no-repeat'
+        const REPEAT_ONE_MODE = 'repeat-one'
+        const REPEAT_ALL_MODE = 'repeat-all'
+
+        switch (this.state.repeatMode) {
+            case NO_REPEAT_MODE: {
+                this.setState({ repeatMode: REPEAT_ONE_MODE })
+                break
+            }
+            case REPEAT_ONE_MODE: {
+                this.setState({ repeatMode: REPEAT_ALL_MODE })
+                break
+            }
+            case REPEAT_ALL_MODE: {
+                this.setState({ repeatMode: NO_REPEAT_MODE })
+                break
+            }
+            default: {
+                this.setState({ repeatMode: REPEAT_ONE_MODE })
+                break
+            }
+        }
     }
 
     handlePlayPause = () => {
@@ -63,7 +103,9 @@ class App extends Component {
     }
 
     setVideoPosition = value => {
-        this.setState({ currentTime: parseFloat(value) })
+        this.setState({ currentTime: parseFloat(value) }, () =>
+            this.player.seekTo(parseFloat(value))
+        )
     }
 
     handlePrevious = (_, playableUniqueID) => {
@@ -160,49 +202,18 @@ class App extends Component {
     }
 
     handleEnded = () => {
-        const currentlyPlaying = this.state.currentlyPlaying
-
-        const currentlyPlayingIndex = this.state.playlist.findIndex(
-            item => item.id === currentlyPlaying
-        )
-        const newCurrentlyPlayingOBJ = this.state.playlist[
-            currentlyPlayingIndex + 1
-        ]
-
-        let newCurrentlyPlaying = newCurrentlyPlayingOBJ['id']
-
-        if (currentlyPlayingIndex + 1 <= this.state.playlist.length - 1) {
-            this.setCurrentlyPlaying(
-                newCurrentlyPlaying,
-                newCurrentlyPlayingOBJ,
-                1000
-            )
-        } else {
-            if (this.state.repeatMode === 'repeat-all') {
-                const firstItemOBJ = this.state.playlist[0]
-
-                newCurrentlyPlaying = firstItemOBJ['id']
-                this.setCurrentlyPlaying(
-                    newCurrentlyPlaying,
-                    newCurrentlyPlayingOBJ,
-                    1000
-                )
-            } else if (this.state.repeatMode === 'repeat-one') {
-                this.setCurrentlyPlaying(
-                    currentlyPlaying,
-                    newCurrentlyPlayingOBJ,
-                    1000
-                )
-            }
+        if (this.state.repeatMode === 'no-repeat') {
+            this.handleNext()
+        } else if (this.state.repeatMode === 'repeat-one') {
+            this.setVideoPosition(0)
+        } else if (this.state.repeatMode === 'repeat-all') {
+            this.handleNext()
         }
 
         console.log('onEnded": ', this.state)
-        //  this.setState({ playing: this.state.loop })
     }
 
     setCurrentlyPlayingPublic = (uniqueId, callback = () => {}) => {
-        console.log('🚀 ~ file: App.js ~ line 166 ~ App ~ uniqueId', uniqueId)
-
         const chosenItemIndex = this.state.playlist.findIndex(
             item => item.id === uniqueId
         )
@@ -379,10 +390,6 @@ class App extends Component {
 
     ref = player => {
         this.player = player
-    }
-
-    notify = ({ mainMessage, colorMessage }) => {
-        this.setState({ message: { mainMessage, colorMessage } })
     }
 
     style = {
@@ -840,9 +847,6 @@ class App extends Component {
             pip
         } = this.state
 
-        const SEPARATOR = ' · '
-        const turnOffSection = true
-
         return (
             <div className="app">
                 <div className="player-wrapper">
@@ -854,6 +858,7 @@ class App extends Component {
                         url={url}
                         pip={pip}
                         playing={playing}
+                        played={played}
                         controls={controls}
                         light={light}
                         loop={loop}
@@ -898,13 +903,10 @@ class App extends Component {
                         handlePrevious={this.handlePrevious}
                         handleNext={this.handleNext}
                         notify={this.notify}
+                        toggleRepeatMode={this.toggleRepeatMode}
+                        repeatMode={this.state.repeatMode}
                     ></Toolbar>
-                    <FlashMessage duration={50000} persistOnHover={true}>
-                        <p>{this.state.message.mainMessage}</p>
-                        <p className="color-text">
-                            {this.state.message.colorMessage}
-                        </p>
-                    </FlashMessage>
+                    <ReactNotification></ReactNotification>
                 </div>
             </div>
         )

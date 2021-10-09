@@ -7,7 +7,7 @@ import { drop } from '../player/drag'
 import { parseYoutubeUrl } from '../utility/youtube'
 import playlistCreator from '../utility/playlistCreator'
 import { uuid } from 'uuidv4'
-import BuildPlaylist from './buildPlaylist'
+import PlaylistItem from './playlistItem'
 
 class Playlist extends Component {
     state = {
@@ -188,16 +188,54 @@ class Playlist extends Component {
     }
 
     render() {
+        const refs = this.props.playlist.reduce((acc, file) => {
+            acc[file.id] = React.createRef()
+            return acc
+        }, {})
+
+        const scrollIntoView = id => {
+            if (!refs) return
+            // console.log('🚀 ==> render ==> refs[id].current', refs[id].current)
+            refs[id].current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            })
+
+            // if (!refs || !this.dropRef?.current) return
+
+            // const rect = refs && refs[id].current.getBoundingClientRect()
+
+            // if (rect.top < 0 || rect.bottom > this.dropRef.clientHeight) {
+            //     refs[id].current?.scrollIntoView()
+            // }
+        }
+
         return (
             <ul
                 className={`playlist ${this.props.hidePlaylist} ${this.state.dragClassName}`}
                 ref={this.props.sortType === 'playlist' ? this.dropRef : null}
             >
-                <BuildPlaylist
-                    files={this.props.playlist}
-                    currentlyPlaying={this.props.currentlyPlaying}
-                    setCurrentlyPlaying={this.props.setCurrentlyPlaying}
-                ></BuildPlaylist>
+                {this.props.playlist.map((file, index) => {
+                    const isSeparator = file.type === 'separator'
+                    let title = isSeparator ? file.name : file.split
+                    // let isDisabled = isSeparator ? true : false
+                    let durationTextContent = isSeparator ? ' ' : '--:--'
+                    let fileSeparator = isSeparator ? 'file-separator' : ''
+
+                    return (
+                        <PlaylistItem
+                            ref={refs[file.id]}
+                            scrollIntoView={scrollIntoView}
+                            title={title}
+                            durationTextContent={durationTextContent}
+                            fileSeparator={fileSeparator}
+                            file={file}
+                            currentlyPlaying={this.props.currentlyPlaying}
+                            setCurrentlyPlaying={this.props.setCurrentlyPlaying}
+                        ></PlaylistItem>
+                    )
+                    // file.e = LI
+                })}
             </ul>
         )
     }
