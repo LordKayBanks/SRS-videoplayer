@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { store } from 'react-notifications-component'
+import './playlistItem.scss'
 
 export default function PlaylistItem({
     file,
@@ -9,7 +9,10 @@ export default function PlaylistItem({
     durationTextContent,
     ref,
     fileSeparator,
-    scrollIntoView
+    category,
+    setCurrentCategory,
+    scrollIntoView,
+    isDisabled
 }) {
     // const scroll = () => file.id === currentlyPlaying && scrollIntoView(file.id)
     // useEffect(() => {
@@ -22,23 +25,8 @@ export default function PlaylistItem({
                 let objControl = document.getElementById(file.id)
 
                 objControl?.scrollIntoView()
-                store.addNotification({
-                    title: 'SR-Videoplayer',
-                    message: 'New Video Playing..',
-                    type: 'success',
-                    insert: 'top',
-                    container: 'top-left',
-                    animationIn: ['animate__animated', 'animate__fadeIn'],
-                    animationOut: ['animate__animated', 'animate__fadeOut'],
-                    dismiss: {
-                        duration: 10000,
-                        onScreen: true
-                    }
-                })
             }, 1000)
         }
-
-        // console.log('🚀 ==> useEffect ==> useEffect', useEffect)
     }, [currentlyPlaying, file.id])
     return (
         <li
@@ -50,11 +38,30 @@ export default function PlaylistItem({
                 file.id === currentlyPlaying ? 'active' : ''
             }`}
             title={title}
-            //  disabled={isDisabled}
+            disabled={isDisabled}
             onClick={e => {
                 setCurrentlyPlaying(file.id, () => {})
             }}
         >
+            {category && (
+                <label className='category-checkbox'>
+                    <input
+                        className="category"
+                        type="checkbox"
+                        id={file.id}
+                        name="category"
+                        value={category}
+                        onClick={e => {
+                            const value = e.target.value
+                            const action = e.target.checked ? true : false
+
+                            setCurrentCategory(value, action)
+                        }}
+                    />
+                    <i></i>
+                    <span></span>
+                </label>
+            )}
             <span className="video-title">
                 {`${file.name}` || `${file.src}`}
             </span>

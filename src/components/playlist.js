@@ -217,13 +217,18 @@ class Playlist extends Component {
             >
                 {this.props.playlist.map((file, index) => {
                     const isSeparator = file.type === 'separator'
+
+                    const category =
+                        file.type === 'separator' ? file.name : null
+
                     let title = isSeparator ? file.name : file.split
-                    // let isDisabled = isSeparator ? true : false
+                    let isDisabled = isSeparator ? true : false
                     let durationTextContent = isSeparator ? ' ' : '--:--'
                     let fileSeparator = isSeparator ? 'file-separator' : ''
 
                     return (
                         <PlaylistItem
+                            category={category}
                             ref={refs[file.id]}
                             scrollIntoView={scrollIntoView}
                             title={title}
@@ -232,6 +237,8 @@ class Playlist extends Component {
                             file={file}
                             currentlyPlaying={this.props.currentlyPlaying}
                             setCurrentlyPlaying={this.props.setCurrentlyPlaying}
+                            setCurrentCategory={this.props.setCurrentCategory}
+                            isDisabled={isDisabled}
                         ></PlaylistItem>
                     )
                     // file.e = LI

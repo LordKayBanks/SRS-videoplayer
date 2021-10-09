@@ -5,7 +5,8 @@ import {
     convertToNearest30,
     convertToNearestX,
     getVideoSplitFactor,
-    toMinutesSeconds
+    toMinutesSeconds,
+    categoryNextPreviousNavigation
 } from './utility/index'
 import ReactNotification, { store } from 'react-notifications-component'
 import 'react-notifications-component/dist/theme.css'
@@ -33,10 +34,10 @@ class App extends Component {
         playbackRate: 10,
         loop: false,
         //  ======================
-        // message: { colorMessage: '', mainMessage: '' },
         playlist: [],
-        repeatMode: 'repeat-one',
+        repeatMode: 'repeat-all',
         currentlyPlaying: '',
+        currentCategory: [],
         title: '',
         videoFormat: '',
         reviewModeSate: false,
@@ -45,7 +46,10 @@ class App extends Component {
         trackingModeState: 'inactive'
     }
 
-    notify = ({ mainMessage = 'SR-Videoplayer', colorMessage = '' }) => {
+    notify = ({
+        mainMessage = 'SR-Videoplayer: Sample Message Title',
+        colorMessage = 'This is a sample message'
+    }) => {
         store.addNotification({
             title: mainMessage,
             message: colorMessage,
@@ -109,6 +113,13 @@ class App extends Component {
     }
 
     handlePrevious = (_, playableUniqueID) => {
+        const { category } = this.state.playlist.find(
+            item => item.id === this.state.currentlyPlaying
+        )
+
+        if (category && this.state.currentCategory.length)
+            return this.handleEnded(false)
+
         let currentlyPlaying
         let currentlyPlayingIndex
         let newCurrentlyPlayingOBJ
@@ -148,6 +159,13 @@ class App extends Component {
     }
 
     handleNext = (_, playableUniqueID) => {
+        const { category } = this.state.playlist.find(
+            item => item.id === this.state.currentlyPlaying
+        )
+
+        if (category && this.state.currentCategory.length)
+            return this.handleEnded(true)
+
         let currentlyPlaying
         let currentlyPlayingIndex
         let newCurrentlyPlayingOBJ
@@ -201,8 +219,41 @@ class App extends Component {
         console.log('🚀 ~ file: App.js ~ line 169 ~ App ~ error', error)
     }
 
-    handleEnded = () => {
-        if (this.state.repeatMode === 'no-repeat') {
+    handleEnded = (goToNext = true) => {
+        const currentlyPlayingUniqueID = this.state.currentlyPlaying
+
+        const { category } = this.state.playlist.find(
+            item => item.id === currentlyPlayingUniqueID
+        )
+
+        if (category && this.state.currentCategory.length) {
+            const filteredByCategory = this.state.playlist.filter(item => {
+                return this.state.currentCategory.includes(item.category)
+            })
+            let currentlyPlayingIndex = filteredByCategory.findIndex(
+                item => item.id === currentlyPlayingUniqueID
+            )
+
+            // currentlyPlayingIndex++
+            // if (currentlyPlayingIndex >= filteredByCategory.length - 1) {
+            //     currentlyPlayingIndex = 0
+            // }
+            currentlyPlayingIndex = categoryNextPreviousNavigation(
+                currentlyPlayingIndex,
+                filteredByCategory,
+                goToNext
+            )
+
+            const newCurrentlyPlayingOBJ =
+                filteredByCategory[currentlyPlayingIndex]
+
+            const newCurrentlyPlaying = newCurrentlyPlayingOBJ['id']
+
+            this.setCurrentlyPlaying(
+                newCurrentlyPlaying,
+                newCurrentlyPlayingOBJ
+            )
+        } else if (this.state.repeatMode === 'no-repeat') {
             this.handleNext()
         } else if (this.state.repeatMode === 'repeat-one') {
             this.setVideoPosition(0)
@@ -230,6 +281,25 @@ class App extends Component {
         }
 
         this.setCurrentlyPlaying(uniqueId, chosenItemItemOBJ, callback)
+    }
+
+    setCurrentCategory = (category, addCategory) => {
+
+        let newCategories
+
+        if (addCategory) {
+            newCategories = [...this.state.currentCategory, category]
+            newCategories = [...new Set(newCategories)]
+        } else {
+            newCategories = this.state.currentCategory.filter(
+                item => item !== category
+            )
+        }
+
+        this.setState({
+            currentCategory: newCategories
+        })
+        // () => console.log('🚀 ==> category', this.state.currentCategory)
     }
 
     setCurrentlyPlaying = (
@@ -896,6 +966,7 @@ class App extends Component {
                     />
 
                     <Toolbar
+                        setCurrentCategory={this.setCurrentCategory}
                         currentlyPlaying={this.state.currentlyPlaying}
                         setCurrentlyPlaying={this.setCurrentlyPlayingPublic}
                         playlist={this.state.playlist}

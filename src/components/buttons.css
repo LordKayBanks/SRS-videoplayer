@@ -52,13 +52,6 @@ input[type='checkbox']:checked + label > svg {
 .repeat[data-mode='no-repeat'] {
     fill: #565656;
 }
-.repeat[data-mode='repeat-all'] path:first-child,
-.repeat[data-mode='no-repeat'] path:first-child {
-    /* display: none; */
-}
-.repeat[data-mode='repeat-one'] path:last-child {
-    /* display: none; */
-}
 
 /* ========== */
 .boost {

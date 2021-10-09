@@ -4,7 +4,6 @@ import { uuid } from 'uuidv4'
 export const categorySeparator = { name: ' ', path: '', type: 'separator' }
 export function sortReviews(reviews, sortCriteria) {
     const MINIMUM_REVIEW_COUNT = 3
-    let temp = []
 
     let result = Object.keys(reviews)
         .map(key => reviews[key])
@@ -29,10 +28,6 @@ export function sortReviews(reviews, sortCriteria) {
                 (reviewA, reviewB) => reviewB.replayCount - reviewA.replayCount
             )
 
-            temp = result.map(({ replayCount, name }) => ({
-                replayCount,
-                name
-            }))
             break
         }
 
@@ -41,10 +36,6 @@ export function sortReviews(reviews, sortCriteria) {
                 (reviewA, reviewB) => reviewA.replayCount - reviewB.replayCount
             )
 
-            temp = result.map(({ replayCount, name }) => ({
-                replayCount,
-                name
-            }))
             break
         }
 
@@ -62,7 +53,6 @@ export function sortReviews(reviews, sortCriteria) {
                         reviewA.path.localeCompare(reviewB.path)
                     )
             })
-            temp = result.map(({ path, name }) => ({ path, name }))
             break
         }
 
@@ -80,7 +70,6 @@ export function sortReviews(reviews, sortCriteria) {
                         reviewA.path.localeCompare(reviewB.path)
                     )
             })
-            temp = result.map(({ path, name }) => ({ path, name }))
             break
         }
         case 'time-descending': {
@@ -100,11 +89,6 @@ export function sortReviews(reviews, sortCriteria) {
                     )
             })
 
-            temp = result.map(({ lastReviewDate, name }) => ({
-                time: dateToDescription(lastReviewDate),
-                lastReviewDate,
-                name
-            }))
             break
         }
 
@@ -125,11 +109,6 @@ export function sortReviews(reviews, sortCriteria) {
                     )
             })
 
-            temp = result.map(({ lastReviewDate, name }) => ({
-                time: dateToDescription(lastReviewDate),
-                lastReviewDate,
-                name
-            }))
             break
         }
 
@@ -137,21 +116,11 @@ export function sortReviews(reviews, sortCriteria) {
             result = result.sort(
                 (reviewA, reviewB) => reviewB.replayCount - reviewA.replayCount
             )
-
-            temp = result.map(({ replayCount, name }) => ({
-                replayCount,
-                name
-            }))
         }
     }
-
-    log(temp)
-
     //   console.error('🚀 sortReviews ~ temp', temp);
     return result
 }
-
-const log = temp => temp
 
 export function groupReviewsBy({
     reviews,
@@ -166,10 +135,10 @@ export function groupReviewsBy({
         let partitionKey = partitionFunc(item[innerKey])
 
         if (resultMap[partitionKey]?.length) {
-            resultMap[partitionKey].push(item)
+            resultMap[partitionKey].push({ ...item, category: partitionKey })
         } else {
             resultMap[partitionKey] = []
-            resultMap[partitionKey].push(item)
+            resultMap[partitionKey].push({ ...item, category: partitionKey })
         }
     }
 
@@ -279,4 +248,21 @@ export const handleMultipleKeyPress = (actionOne, actionTwo) => {
             actionTwo()
         }
     }
+}
+
+export const categoryNextPreviousNavigation = (
+    currentlyPlayingIndex_,
+    filteredByCategory,
+    goToNext = true
+) => {
+    let currentlyPlayingIndex = currentlyPlayingIndex_
+
+    if (goToNext) currentlyPlayingIndex++
+    else currentlyPlayingIndex--
+    if (currentlyPlayingIndex > filteredByCategory.length - 1) {
+        currentlyPlayingIndex = 0
+    } else if (currentlyPlayingIndex < 0) {
+        currentlyPlayingIndex = filteredByCategory.length - 1
+    }
+    return currentlyPlayingIndex
 }

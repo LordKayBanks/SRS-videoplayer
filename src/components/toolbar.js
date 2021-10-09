@@ -16,7 +16,8 @@ export default function Toolbar({
     handlePrevious,
     handleNext,
     toggleRepeatMode,
-    repeatMode
+    repeatMode,
+    setCurrentCategory
 }) {
     const [toolbarOpen, setToolbarOpen] = useState(true)
     const [sortType, setSortType] = useState('playlist')
@@ -35,6 +36,7 @@ export default function Toolbar({
         >
             {toolbarOpen && <SelectSortingOption setSortType={setSortType} />}
             <Playlist
+                setCurrentCategory={setCurrentCategory}
                 setPlaylist={setPlaylist}
                 playlist={playlist}
                 setCurrentlyPlaying={setCurrentlyPlaying}
