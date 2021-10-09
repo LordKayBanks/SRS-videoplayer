@@ -10,7 +10,7 @@ import { render } from 'react-dom'
 // import './storage.js'
 // import './keyboard.js'
 
-import './utility/seedData.js'
+// import './utility/seedData.js'
 import { keepTrackOfReviews } from './utility/startup'
 
 keepTrackOfReviews()

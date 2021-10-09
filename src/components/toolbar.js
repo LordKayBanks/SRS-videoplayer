@@ -8,9 +8,10 @@ import SortingOption from './SortingOption'
 
 export default function Toolbar({
   notify,
-  playNewVideo,
-  setPlaylist,
+  currentlyPlaying,
+  setCurrentlyPlaying,
   playlist,
+  setPlaylist,
   onSelectPlaylistItem = null,
   handlePrevious,
   handleNext
@@ -20,12 +21,12 @@ export default function Toolbar({
 
   function onAddNewURL(e) {
     if (e.key === 'Enter') {
-      playNewVideo(e.target.value)
+      // playNewVideo(e.target.value)
     }
   }
 
   function handlePlay(url) {
-    playNewVideo(url)
+    //  playNewVideo(url)
   }
 
   return (
@@ -34,7 +35,8 @@ export default function Toolbar({
       <Playlist
         setPlaylist={setPlaylist}
         playlist={playlist}
-        handlePlay={handlePlay}
+        setCurrentlyPlaying={setCurrentlyPlaying}
+        currentlyPlaying={currentlyPlaying}
         sortType={sortType}
         hidePlaylist={`${toolbarOpen ? '' : 'hide-playlist'}`}
         notify={notify}
