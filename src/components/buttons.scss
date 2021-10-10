@@ -15,22 +15,33 @@ label {
     cursor: pointer;
     display: flex;
 }
+
 svg {
     padding: 5px;
     position: relative;
 }
+
 label * {
     pointer-events: none;
 }
+
 label:hover,
 label[data-mode='active'],
 label.active,
 input[type='checkbox']:checked + label {
     background-color: var(--hover-color);
 }
-label[data-mode='loop'] {
+
+.review-btn-active {
+    // background-color: red;
+}
+.review-btn-loop {
     background-color: red;
 }
+.review-btn-inactive {
+    // background-color: red;
+}
+// ===============
 
 .disabled {
     opacity: 0.3;

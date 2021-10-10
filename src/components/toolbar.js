@@ -17,10 +17,14 @@ export default function Toolbar({
     handleNext,
     toggleRepeatMode,
     repeatMode,
-    setCurrentCategory
+    setCurrentCategory,trackingModeState,
+    setupForStandardTrackingMode,
+    setupReviewMode,
+    reviewMode,
+    setSortType,
+    sortType
 }) {
     const [toolbarOpen, setToolbarOpen] = useState(true)
-    const [sortType, setSortType] = useState('playlist')
 
     function onAddNewURL(e) {
         if (e.key === 'Enter') {
@@ -34,7 +38,12 @@ export default function Toolbar({
                 toolbarOpen ? 'toolbar-open' : 'hide-toolbar'
             }`}
         >
-            {toolbarOpen && <SelectSortingOption setSortType={setSortType} />}
+            {toolbarOpen && (
+                <SelectSortingOption
+                    setSortType={setSortType}
+                    setupReviewMode={setupReviewMode}
+                />
+            )}
             <Playlist
                 setCurrentCategory={setCurrentCategory}
                 setPlaylist={setPlaylist}
@@ -58,6 +67,10 @@ export default function Toolbar({
                 />
             )}
             <Buttons
+                reviewMode={reviewMode}
+                setupReviewMode={setupReviewMode}
+                trackingModeState={trackingModeState}
+                setupForStandardTrackingMode={setupForStandardTrackingMode}
                 horizontalButtons={`${toolbarOpen ? 'horizontal-buttons' : ''}`}
                 boost={2}
                 speed={2}

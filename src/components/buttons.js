@@ -1,8 +1,12 @@
-import './buttons.css'
+import './buttons.scss'
 
 import React from 'react'
 
 export default function Buttons({
+    trackingModeState,
+    setupForStandardTrackingMode,
+    setupReviewMode,
+    reviewMode,
     horizontalButtons,
     boost = 3,
     speed = 2,
@@ -11,12 +15,21 @@ export default function Buttons({
     togglePToolbar = () => {},
     shufflePlaylist = () => {},
     changeTrackingMode = () => {},
-    changeReviewMode = () => {},
     changeSpeed = () => {},
     changeBoost = () => {},
     previousVideo = () => {},
     nextVideo = () => {}
 }) {
+    const changeReviewMode = e => {
+        if (reviewMode === 'active') {
+            setupReviewMode({ activate: true })
+        } else if (reviewMode === 'loop') {
+            setupReviewMode({ loopCurrentSplit: true })
+        } else if (reviewMode === 'inactive') {
+            setupReviewMode({ activate: false })
+        }
+    }
+
     return (
         <div className={`buttons ${horizontalButtons}`}>
             <input
@@ -26,7 +39,7 @@ export default function Buttons({
                 title="Toggle Playlist (Ctrl + P or Command + P)"
             />
 
-            <label for="p-button" class="" id="p-button-view">
+            <label htmlFor="p-button" id="p-button-view">
                 <svg width="22" height="22" viewBox="0 0 22 22">
                     <rect width="16" height="2" x="3" y="3"></rect>
                     <rect width="16" height="2" x="3" y="9"></rect>
@@ -36,7 +49,6 @@ export default function Buttons({
 
             <label
                 onClick={shufflePlaylist}
-                class=""
                 className="shuffle"
                 title="Shuffle Playlist"
             >
@@ -46,18 +58,18 @@ export default function Buttons({
             </label>
 
             <label
-                onClick={changeTrackingMode}
+                onClick={setupForStandardTrackingMode}
                 id="trackingMode"
-                data-mode="inactive"
+                 className={`tracking-btn-${trackingModeState}`}
                 title="Tracking Mode"
             >
                 <svg width="30" height="22" viewBox="0 0 48 48">
                     <text
                         x="50%"
                         y="50%"
-                        alignment-baseline="middle"
-                        text-anchor="middle"
-                        font-size="34"
+                        alignmentBaseline="middle"
+                        textAnchor="middle"
+                        fontSize="34"
                     >
                         T
                     </text>
@@ -66,6 +78,7 @@ export default function Buttons({
 
             <label
                 onClick={changeReviewMode}
+                className={`review-btn-${reviewMode}`}
                 id="reviewMode"
                 data-mode="inactive"
                 title="Review Mode"
@@ -74,9 +87,9 @@ export default function Buttons({
                     <text
                         x="50%"
                         y="50%"
-                        alignment-baseline="middle"
-                        text-anchor="middle"
-                        font-size="34"
+                        alignmentBaseline="middle"
+                        textAnchor="middle"
+                        fontSize="34"
                     >
                         R
                     </text>
@@ -109,9 +122,9 @@ export default function Buttons({
                     <text
                         x="50%"
                         y="50%"
-                        alignment-baseline="middle"
-                        text-anchor="middle"
-                        font-size="24"
+                        alignmentBaseline="middle"
+                        textAnchor="middle"
+                        fontSize="24"
                     >
                         {`${speed}X`}
                     </text>
@@ -128,9 +141,9 @@ export default function Buttons({
                     <text
                         x="50%"
                         y="50%"
-                        alignment-baseline="middle"
-                        text-anchor="middle"
-                        font-size="24"
+                        alignmentBaseline="middle"
+                        textAnchor="middle"
+                        fontSize="24"
                     >
                         {`${boost}B`}
                     </text>
@@ -139,7 +152,6 @@ export default function Buttons({
 
             <label
                 onClick={previousVideo}
-                class=""
                 className="previous"
                 title="Play Previous Song (Ctrl + Shift + P or Command + Shift + P)"
             >
@@ -150,7 +162,6 @@ export default function Buttons({
 
             <label
                 onClick={nextVideo}
-                class=""
                 className="next"
                 title="Play Next Song (Ctrl + Shift + N or Command + Shift + N)"
             >

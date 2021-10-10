@@ -1,15 +1,15 @@
 import './App.css'
+import 'react-notifications-component/dist/theme.css'
 
 import React, { Component } from 'react'
+import ReactNotification, { store } from 'react-notifications-component'
 import {
+    categoryNextPreviousNavigation,
     convertToNearest30,
     convertToNearestX,
     getVideoSplitFactor,
-    toMinutesSeconds,
-    categoryNextPreviousNavigation
+    toMinutesSeconds
 } from './utility/index'
-import ReactNotification, { store } from 'react-notifications-component'
-import 'react-notifications-component/dist/theme.css'
 
 import ReactPlayer from 'react-player'
 import Toolbar from './components/toolbar'
@@ -31,19 +31,17 @@ class App extends Component {
         loaded: 0,
         duration: 0,
         currentTime: 0,
-        playbackRate: 10,
+        playbackRate: 2,
         loop: false,
         //  ======================
         playlist: [],
+        sortType: 'playlist',
         repeatMode: 'repeat-all',
         currentlyPlaying: '',
         currentCategory: [],
         title: '',
-        videoFormat: '',
-        reviewModeSate: false,
-        reviewRangeStart: 0,
-        reviewRangeEnd: 0,
-        trackingModeState: 'inactive'
+        videoFormat: ''
+        //==========
     }
 
     notify = ({
@@ -156,14 +154,19 @@ class App extends Component {
         const newCurrentlyPlaying = newCurrentlyPlayingOBJ['id']
 
         this.setCurrentlyPlaying(newCurrentlyPlaying, newCurrentlyPlayingOBJ)
+        if (this.reviewConfig.reviewMode !== 'inactive') {
+            setTimeout(() => {
+                this.setupReviewMode({})
+            }, 1000)
+        }
     }
 
     handleNext = (_, playableUniqueID) => {
-        const { category } = this.state.playlist.find(
+        const res = this.state.playlist.find(
             item => item.id === this.state.currentlyPlaying
         )
 
-        if (category && this.state.currentCategory.length)
+        if (res?.category && this.state.currentCategory.length)
             return this.handleEnded(true)
 
         let currentlyPlaying
@@ -202,6 +205,11 @@ class App extends Component {
         const newCurrentlyPlaying = newCurrentlyPlayingOBJ['id']
 
         this.setCurrentlyPlaying(newCurrentlyPlaying, newCurrentlyPlayingOBJ)
+        if (this.reviewConfig.reviewMode !== 'inactive') {
+            setTimeout(() => {
+                this.setupReviewMode({})
+            }, 1000)
+        }
     }
 
     handlePause = () => {
@@ -284,7 +292,6 @@ class App extends Component {
     }
 
     setCurrentCategory = (category, addCategory) => {
-
         let newCategories
 
         if (addCategory) {
@@ -296,10 +303,20 @@ class App extends Component {
             )
         }
 
-        this.setState({
-            currentCategory: newCategories
-        })
-        // () => console.log('🚀 ==> category', this.state.currentCategory)
+        this.setState(
+            {
+                currentCategory: newCategories
+            },
+            () => {
+                const currentItemOBJ = newCategories[0]
+
+                currentItemOBJ?.id &&
+                    this.setCurrentlyPlaying(
+                        currentItemOBJ['id'],
+                        currentItemOBJ
+                    )
+            }
+        )
     }
 
     setCurrentlyPlaying = (
@@ -311,7 +328,8 @@ class App extends Component {
             {
                 url: currentlyPlayingOBJ.path,
                 currentlyPlaying: uniqueId,
-                playing: true
+                playing: true,
+                title: currentlyPlayingOBJ.name
             },
             () => {
                 callback()
@@ -370,6 +388,10 @@ class App extends Component {
             },
             callback()
         )
+    }
+
+    setSortType = sortType => {
+        this.setState({ sortType }, () => {})
     }
 
     load = url => {
@@ -469,8 +491,15 @@ class App extends Component {
         width: '250px',
         background: ' #a58181'
     }
+
     // ==========================================================
     // ==========================================================
+    reviewConfig = {
+        reviewMode: 'inactive',
+        reviewRangeStart: 0,
+        reviewRangeEnd: 0,
+        trackingModeState: 'inactive'
+    }
 
     replayConfig = {
         startPosition: 0,
@@ -490,6 +519,225 @@ class App extends Component {
         speedMode: 0, //1
         lastKeypressTime: null,
         delta: 500
+    }
+
+    setupForStandardTrackingMode = () => {
+        if (this.reviewConfig.reviewMode !== 'inactive') {
+            this.reviewConfig.reviewMode = 'inactive'
+            // this.setState({ reviewMode: 'inactive' })
+            this.setupReviewMode({ activate: false })
+        }
+
+        let videoSplit = getVideoSplitFactor(this.player.getDuration())
+
+        this.replayConfig.interval = parseInt(
+            this.player.getDuration() / videoSplit
+        )
+
+        this.replayConfig.startOffset = convertToNearestX(
+            this.player.getCurrentTime(),
+            this.replayConfig.interval
+        )
+        //====================
+        this.trackingMode(null, false)
+    }
+
+    speedTracker = 2
+    trackingMode = (offSet, renormalize = true) => {
+        clearInterval(this.alertConfig.alertConfigMidwayTime)
+        clearInterval(this.alertConfig.alertConfigTwoThirdTime)
+        clearInterval(this.alertConfig.alertConfigOneThirdTime)
+        //   ========================
+
+        if (this.replayConfig.unsubscribe) {
+            clearInterval(this.replayConfig.unsubscribe)
+            this.replayConfig.unsubscribe = null
+            this.notify({
+                mainMessage: 'Tracking mode started:',
+                colorMessage: 'Review: Stopped!'
+            })
+        } else {
+            if (renormalize) {
+                this.replayConfig.startPosition = Math.max(
+                    convertToNearest30(this.player.getCurrentTime()) - offSet,
+                    0
+                )
+
+                this.replayConfig.endPosition = Math.min(
+                    this.replayConfig.startPosition + offSet,
+                    this.player.getDuration()
+                )
+            } else {
+                this.replayConfig.startPosition = Math.max(
+                    this.replayConfig.startOffset,
+                    0
+                )
+
+                this.replayConfig.endPosition = Math.min(
+                    this.replayConfig.startPosition +
+                        this.replayConfig.interval,
+                    this.player.getDuration()
+                )
+            }
+
+            this.setSpeed(2)
+
+            const minDurationForVideoSplitFactor = 5 * 60
+
+            this.player.getDuration() < minDurationForVideoSplitFactor
+                ? this.setVideoPosition(0)
+                : this.setVideoPosition(
+                      parseInt(this.replayConfig.startPosition)
+                  )
+
+            this.replayConfig.unsubscribe = setInterval(() => {
+                if (
+                    this.player.getCurrentTime() >=
+                        this.replayConfig.endPosition - 5 ||
+                    this.player.getCurrentTime() <
+                        this.replayConfig.startPosition
+                ) {
+                    this.setVideoPosition(this.replayConfig.startPosition)
+
+                    const speedTOptions = [2, 3, 10]
+
+                    this.speedTracker =
+                        (this.speedTracker + 1) % speedTOptions.length
+                    this.setSpeed(speedTOptions[this.speedTracker])
+                    this.studyStatisticsTracker()
+                }
+            }, 1000)
+            this.notifyReplayStatus()
+        }
+    }
+
+    //   moveToNextPlaybackRange = () => {
+    //     this.replayConfig.startPosition = Math.min(
+    //       this.replayConfig.startPosition + this.replayConfig.interval,
+    //       this.player.getDuration()- this.replayConfig.interval
+    //     )
+    //     this.replayConfig.endPosition = Math.min(
+    //       this.replayConfig.startPosition + this.replayConfig.interval,
+    //       this.player.getDuration()
+    //     )
+    //     this.setVideoPosition(this.replayConfig.startPosition)
+    //     this.notifyReplayStatus()
+    //   }
+
+    //   moveToPreviousPlaybackRange = () => {
+    //     this.replayConfig.startPosition = Math.max(
+    //       this.replayConfig.startPosition - this.replayConfig.interval,
+    //       0
+    //     )
+    //     this.replayConfig.endPosition = Math.min(
+    //       this.replayConfig.startPosition + this.replayConfig.interval,
+    //       this.player.getDuration()
+    //     )
+    //     this.setVideoPosition(this.replayConfig.startPosition)
+    //     this.notifyReplayStatus()
+    //   }
+
+    unsubscribeToReview = null
+
+    setupReviewMode = ({ activate = true, loopCurrentSplit = false }) => {
+        if (!activate) {
+            clearInterval(this.unsubscribeToReview)
+            this.reviewConfig.reviewMode = 'inactive'
+            return this.notify({
+                mainMessage: 'reviewMode:',
+                colorMessage: 'Review: Stopped!'
+            })
+            // this.setState({ reviewMode: 'inactive' }, () => {
+            //     return this.notify({
+            //         mainMessage: 'reviewMode:',
+            //         colorMessage: 'Review: Stopped!'
+            //     })
+            // })
+        }
+
+        if (this.reviewConfig.trackingModeState === 'active') {
+            this.reviewConfig.trackingModeState = 'inactive'
+            // this.setState({ trackingModeState: 'inactive' })
+            this.trackingMode(null, false)
+        }
+        // =====================================
+
+        if (this.reviewConfig.reviewRangeStart)
+            this.setVideoPosition(this.reviewConfig.reviewRangeStart)
+
+        clearInterval(this.unsubscribeToReview)
+        if (loopCurrentSplit) {
+            this.reviewConfig.reviewMode = 'loop'
+            this.notify({
+                mainMessage: 'reviewMode:',
+                colorMessage: ' Review mode: Looping'
+            })
+            // this.setState({ reviewMode: 'loop' }, () => {
+            //     this.notify({
+            //         mainMessage: 'reviewMode:',
+            //         colorMessage: ' Review mode: Looping'
+            //     })
+            // })
+        } else {
+            this.reviewConfig.reviewMode = 'active'
+            this.notify({
+                mainMessage: 'reviewMode:',
+                colorMessage: ' Review mode: Active'
+            })
+            // this.setState({ reviewMode: 'active' }, () => {
+            //     this.notify({
+            //         mainMessage: 'reviewMode:',
+            //         colorMessage: ' Review mode: Active'
+            //     })
+            // })
+        }
+
+        this.watcherForReviewMode(loopCurrentSplit)
+    }
+
+    watcherForReviewMode = (loopCurrentSplit = false) => {
+        this.unsubscribeToReview = setInterval(() => {
+            if (
+                this.player.getCurrentTime() <
+                this.reviewConfig.reviewRangeStart
+            ) {
+                this.setVideoPosition(this.reviewConfig.reviewRangeStart)
+            }
+
+            if (loopCurrentSplit) {
+                if (
+                    this.player.getCurrentTime() >=
+                    this.reviewConfig.reviewRangeEnd - 5
+                ) {
+                    this.setVideoPosition(this.reviewConfig.reviewRangeStart)
+                    this.studyStatisticsTracker(0.5)
+                }
+            } else {
+                if (
+                    this.player.getCurrentTime() >=
+                    this.reviewConfig.reviewRangeEnd - 5
+                ) {
+                    this.studyStatisticsTracker(0.25)
+                    // todo ========
+                    this.handleNext()
+                    // this.setCurrentlyPlaying(
+                    //     this.state.playlist[this.state.currentlyPlaying + 1]
+                    // )
+                    this.setState({
+                        currentlyPlaying: this.state.currentlyPlaying + 1
+                    })
+                    this.setVideoPosition(this.reviewConfig.reviewRangeStart)
+                    //  ========
+                    clearInterval(this.unsubscribeToReview)
+                    this.watcherForReviewMode()
+                    // ===================
+                    //  this.setVideoPosition(this.reviewConfig.reviewRangeStart);
+                    //  this.setSpeed(speedTOptions[this.speedTracker]);
+                    //  studyStatisticsTracker();
+                    //   this.notifyReplayStatus();
+                }
+            }
+        }, 1000)
     }
 
     studyStatisticsTracker = (increment = 1) => {
@@ -537,89 +785,6 @@ class App extends Component {
         this.notifyReplayStatus()
     }
 
-    setupForStandardTrackingMode = () => {
-        if (this.state.reviewModeSate !== 'inactive') {
-            this.setState({ reviewModeSate: 'inactive' })
-            this.setupReviewMode({ activate: false })
-        }
-
-        let videoSplit = getVideoSplitFactor(this.state.duration)
-
-        this.replayConfig.interval = parseInt(this.state.duration / videoSplit)
-        this.replayConfig.startOffset = convertToNearestX(
-            this.state.currentTime,
-            this.replayConfig.interval
-        )
-    }
-
-    speedTracker = 2
-    trackingMode = (offSet, renormalize = true) => {
-        clearInterval(this.alertConfig.alertConfigMidwayTime)
-        clearInterval(this.alertConfig.alertConfigTwoThirdTime)
-        clearInterval(this.alertConfig.alertConfigOneThirdTime)
-        //   ========================
-
-        if (this.replayConfig.unsubscribe) {
-            clearInterval(this.replayConfig.unsubscribe)
-            this.replayConfig.unsubscribe = null
-            this.notify({
-                mainMessage: 'Replay: Stopped!',
-                colorMessage: 'rtrhfgfdhfghf'
-            })
-        } else {
-            if (renormalize) {
-                this.replayConfig.startPosition = Math.max(
-                    convertToNearest30(this.state.currentTime) - offSet,
-                    0
-                )
-
-                this.replayConfig.endPosition = Math.min(
-                    this.replayConfig.startPosition + offSet,
-                    this.state.duration
-                )
-            } else {
-                this.replayConfig.startPosition = Math.max(
-                    this.replayConfig.startOffset,
-                    0
-                )
-
-                this.replayConfig.endPosition = Math.min(
-                    this.replayConfig.startPosition +
-                        this.replayConfig.interval,
-                    this.state.duration
-                )
-            }
-
-            this.setSpeed(2)
-
-            const minDurationForVideoSplitFactor = 5 * 60
-
-            this.state.duration < minDurationForVideoSplitFactor
-                ? this.setVideoPosition(0)
-                : this.setVideoPosition(
-                      parseInt(this.replayConfig.startPosition)
-                  )
-
-            this.replayConfig.unsubscribe = setInterval(() => {
-                if (
-                    this.state.currentTime >=
-                        this.replayConfig.endPosition - 5 ||
-                    this.state.currentTime < this.replayConfig.startPosition
-                ) {
-                    this.setVideoPosition(this.replayConfig.startPosition)
-
-                    const speedTOptions = [2, 3, 10]
-
-                    this.speedTracker =
-                        (this.speedTracker + 1) % speedTOptions.length
-                    this.setSpeed(speedTOptions[this.speedTracker])
-                    this.studyStatisticsTracker()
-                }
-            }, 1000)
-            this.notifyReplayStatus()
-        }
-    }
-
     alertAtKeyMoments = () => {
         clearInterval(this.alertConfig.alertConfigMidwayTime)
         clearInterval(this.alertConfig.alertConfigTwoThirdTime)
@@ -629,24 +794,24 @@ class App extends Component {
         //   =================
         //   const standardLength = 10 * 60; //10mins
         //   const minimumLength = 6 * 60; //6mins
-        //   if (this.state.duration < minimumLength) return;
+        //   if (this.player.getDuration()< minimumLength) return;
         //   =================>
         this.alertConfig.alertConfigOneThirdTime = setInterval(() => {
-            const _25PercentTime = this.state.duration * 0.25 //80%
+            const _25PercentTime = this.player.getDuration() * 0.25 //80%
 
             if (
-                // this.state.duration > standardLength &&
-                this.state.currentTime > _25PercentTime &&
-                this.state.currentTime < _25PercentTime * 2
+                // this.player.getDuration()> standardLength &&
+                this.player.getCurrentTime() > _25PercentTime &&
+                this.player.getCurrentTime() < _25PercentTime * 2
             ) {
                 this.alertConfig.speedMode === 1 && this.setSpeed(3)
                 this.alertConfig.speedMode === 2 && this.setSpeed(3.5)
 
-                const remainTime = this.state.duration - _25PercentTime //25%
+                const remainTime = this.player?.getDuration() - _25PercentTime //25%
 
                 this.notify({
-                    mainMessage: `Alert:\r\nJust Past 25%`,
-                    colorMessage: `\r\n[${toMinutesSeconds(remainTime, false)}]`
+                    mainMessage: `Alert: Just Past 25%`,
+                    colorMessage: `[${toMinutesSeconds(remainTime, false)}]`
                 })
                 clearInterval(this.alertConfig.alertConfigOneThirdTime)
             }
@@ -654,17 +819,17 @@ class App extends Component {
 
         //   =================>
         this.alertConfig.alertConfigMidwayTime = setInterval(() => {
-            const midwayTime = this.state.duration * 0.5 //60%
+            const midwayTime = this.player.getDuration() * 0.5 //60%
 
-            if (this.state.currentTime > midwayTime) {
+            if (this.player.getCurrentTime() > midwayTime) {
                 this.alertConfig.speedMode === 1 && this.setSpeed(3)
                 this.alertConfig.speedMode === 2 && this.setSpeed(4)
 
-                const remainTime = this.state.duration - midwayTime //40%
+                const remainTime = this.player.getDuration() - midwayTime //40%
 
                 this.notify({
-                    mainMessage: `Alert:\r\nJust Past 50%`,
-                    colorMessage: `\r\n[${toMinutesSeconds(remainTime, false)}]`
+                    mainMessage: `Alert:Just Past 50%`,
+                    colorMessage: `[${toMinutesSeconds(remainTime, false)}]`
                 })
                 clearInterval(this.alertConfig.alertConfigMidwayTime)
             }
@@ -672,119 +837,57 @@ class App extends Component {
 
         //   =====================>
         this.alertConfig.alertConfigTwoThirdTime = setInterval(() => {
-            const _75PercentTime = this.state.duration * 0.75 //80%
+            const _75PercentTime = this.player.getDuration() * 0.75 //80%
 
             if (
-                // this.state.duration > standardLength &&
-                this.state.currentTime > _75PercentTime
+                // this.player.getDuration()> standardLength &&
+                this.player.getCurrentTime() > _75PercentTime
             ) {
                 this.alertConfig.speedMode === 1 && this.setSpeed(3.5)
                 this.alertConfig.speedMode === 2 && this.setSpeed(4.5)
 
-                const remainTime = this.state.duration - _75PercentTime //25%
+                const remainTime = this.player.getDuration() - _75PercentTime //25%
 
                 this.notify({
-                    mainMessage: `Alert:\r\nJust Past 75%`,
-                    colorMessage: `\r\n[${toMinutesSeconds(remainTime, false)}]`
+                    mainMessage: `Alert:Just Past 75%`,
+                    colorMessage: `[${toMinutesSeconds(remainTime, false)}]`
                 })
                 clearInterval(this.alertConfig.alertConfigTwoThirdTime)
             }
         }, 2000)
     }
 
-    //   moveToNextPlaybackRange = () => {
-    //     this.replayConfig.startPosition = Math.min(
-    //       this.replayConfig.startPosition + this.replayConfig.interval,
-    //       this.state.duration - this.replayConfig.interval
-    //     )
-    //     this.replayConfig.endPosition = Math.min(
-    //       this.replayConfig.startPosition + this.replayConfig.interval,
-    //       this.state.duration
-    //     )
-    //     this.setVideoPosition(this.replayConfig.startPosition)
-    //     this.notifyReplayStatus()
-    //   }
+    notifyReplayStatus = () => {
+        const currentSplit = parseInt(
+            this.replayConfig.endPosition / this.replayConfig.interval
+        )
+        const totalSplit = parseInt(
+            this.player.getDuration() / this.replayConfig.interval
+        )
 
-    //   moveToPreviousPlaybackRange = () => {
-    //     this.replayConfig.startPosition = Math.max(
-    //       this.replayConfig.startPosition - this.replayConfig.interval,
-    //       0
-    //     )
-    //     this.replayConfig.endPosition = Math.min(
-    //       this.replayConfig.startPosition + this.replayConfig.interval,
-    //       this.state.duration
-    //     )
-    //     this.setVideoPosition(this.replayConfig.startPosition)
-    //     this.notifyReplayStatus()
-    //   }
+        let reviews = JSON.parse(localStorage.getItem('reviews'))
 
-    isReviewing = false
-    unsubscribeToReview = null
+        let videoStat =
+            reviews &&
+            reviews[this.state.url]?.replayHistory[`split-${currentSplit}`]
+                ?.count
 
-    setupReviewMode = ({ activate = true, loopCurrentSplit = false }) => {
-        const deactivate = !activate
-
-        if (deactivate) {
-            clearInterval(this.unsubscribeToReview)
-
-            return this.notify({
-                mainMessage: 'Replay: Stopped!',
-                colorMessage: ''
-            })
-        }
-
-        if (this.state.trackingModeState === 'active') {
-            this.setState({ trackingModeState: 'inactive' })
-            this.trackingMode(null, false)
-        }
-
-        if (this.state.reviewRangeStart)
-            this.setVideoPosition(this.state.reviewRangeStart)
-
-        clearInterval(this.unsubscribeToReview)
-        loopCurrentSplit &&
-            this.notify({
-                mainMessage: `Reviews: Looping`,
-                colorMessage: ''
-            })
-        this.watcherForReviewMode(loopCurrentSplit)
+        this.notify({
+            mainMessage: `Video Stats: Split watch count:: ${
+                videoStat ?? 0
+            } times!\r\nReplay: is ${
+                this.replayConfig.unsubscribe ? 'ON!:' : 'OFF!:'
+            }\r\nStart Time: ${toMinutesSeconds(
+                this.replayConfig.startPosition
+            )}\r\nEnd Time:  ${toMinutesSeconds(
+                this.replayConfig.endPosition
+            )}`,
+            colorMessage: `Position:   [${currentSplit}] of [${totalSplit}]`,
+            delay: 20000
+        })
     }
-
-    watcherForReviewMode = (loopCurrentSplit = false) => {
-        this.unsubscribeToReview = setInterval(() => {
-            if (this.state.currentTime < this.state.reviewRangeStart) {
-                this.setVideoPosition(this.state.reviewRangeStart)
-            }
-
-            if (loopCurrentSplit) {
-                if (this.state.currentTime >= this.state.reviewRangeEnd - 5) {
-                    this.setVideoPosition(this.state.reviewRangeStart)
-                    this.studyStatisticsTracker(0.5)
-                }
-            } else {
-                if (this.state.currentTime >= this.state.reviewRangeEnd - 5) {
-                    this.studyStatisticsTracker(0.25)
-                    // todo ========
-                    this.setCurrentlyPlaying(
-                        this.state.playlist[this.state.currentlyPlaying + 1]
-                    )
-
-                    this.setState({
-                        currentlyPlaying: this.state.currentlyPlaying + 1
-                    })
-                    this.setVideoPosition(this.state.reviewRangeStart)
-                    //  ========
-                    clearInterval(this.unsubscribeToReview)
-                    this.watcherForReviewMode()
-                    // ===================
-                    //  this.setVideoPosition(this.state.reviewRangeStart);
-                    //  this.setSpeed(speedTOptions[this.speedTracker]);
-                    //  studyStatisticsTracker();
-                    //   this.notifyReplayStatus();
-                }
-            }
-        }, 1000)
-    }
+    //=================================================================
+    //=================================================================
 
     // video.addEventListener('seeked', this.alertAtKeyMoments);
     videoOnLoadeddata = () => {
@@ -803,11 +906,9 @@ class App extends Component {
             return setTimeout(this.notifyReplayStatus, 5000)
         }
 
-        const videoTitle = `${this.state.title}  `
-
         this.notify({
-            mainMessage: videoTitle,
-            colorMessage: `[${toMinutesSeconds(this.state.duration)}]`
+            mainMessage: `Title: ${this.state.title}`,
+            colorMessage: `[${toMinutesSeconds(this.player.getDuration())}]`
         })
     }
 
@@ -836,19 +937,19 @@ class App extends Component {
     }
 
     seekToTime = value => {
-        let seekToTime = this.state.currentTime + value
+        let seekToTime = this.player.getCurrentTime() + value
 
         if (seekToTime < 0) {
             this.setVideoPosition(0)
-        } else if (seekToTime > this.state.duration)
-            this.setVideoPosition(this.state.duration)
+        } else if (seekToTime > this.player.getDuration())
+            this.setVideoPosition(this.player.getDuration())
 
         this.setVideoPosition(seekToTime)
         this.notify({
-            mainMessage: `Current Position: <${toMinutesSeconds(
-                this.state.currentTime
-            )}> of <${toMinutesSeconds(this.state.duration)}>`,
-            colorMessage: ''
+            mainMessage: 'Sample Title: ',
+            colorMessage: `Current Position: <${toMinutesSeconds(
+                this.player.getCurrentTime()
+            )}> of <${toMinutesSeconds(this.player.getDuration())}>`
         })
     }
 
@@ -868,36 +969,6 @@ class App extends Component {
         this.setSpeed(newSpeed)
     }
 
-    notifyReplayStatus = () => {
-        const currentSplit = parseInt(
-            this.replayConfig.endPosition / this.replayConfig.interval
-        )
-        const totalSplit = parseInt(
-            this.state.duration / this.replayConfig.interval
-        )
-
-        let reviews = JSON.parse(localStorage.getItem('reviews'))
-
-        let videoStat =
-            reviews &&
-            reviews[this.state.url]?.replayHistory[`split-${currentSplit}`]
-                ?.count
-
-        this.notify({
-            mainMessage: `Video Stats: Split watch count:: ${
-                videoStat ?? 0
-            } times!
-    \r\nReplay: is ${
-        this.replayConfig.unsubscribe ? 'ON!:' : 'OFF!:'
-    }\r\nStart Time: ${toMinutesSeconds(
-                this.replayConfig.startPosition
-            )}\r\nEnd Time:  ${toMinutesSeconds(
-                this.replayConfig.endPosition
-            )}`,
-            colorMessage: `\r\nPosition:   [${currentSplit}] of [${totalSplit}]`,
-            delay: 20000
-        })
-    }
     // ==========================================================
     // ==========================================================
 
@@ -937,19 +1008,20 @@ class App extends Component {
                         muted={muted}
                         onReady={() => {
                             console.log('onReady')
-                            this.videoOnLoadeddata()
+                            // this.videoOnLoadeddata()
                         }}
                         onStart={() => {
                             console.log('onStart')
+                            this.videoOnLoadeddata()
                         }}
                         onPlay={this.handlePlay}
-                        onEnablePIP={this.handleEnablePIP}
-                        onDisablePIP={this.handleDisablePIP}
                         onPause={this.handlePause}
-                        onBuffer={() => console.log('onBuffer')}
                         onSeek={e => console.log('onSeek', e)}
                         onEnded={this.handleEnded}
                         onError={this.handleError}
+                        onBuffer={() => console.log('onBuffer')}
+                        onEnablePIP={this.handleEnablePIP}
+                        onDisablePIP={this.handleDisablePIP}
                         onProgress={this.handleProgress}
                         onDuration={this.handleDuration}
                         config={{
@@ -966,6 +1038,14 @@ class App extends Component {
                     />
 
                     <Toolbar
+                        sortType={this.state.sortType}
+                        setSortType={this.setSortType}
+                        reviewMode={this.reviewConfig.reviewMode}
+                        setupReviewMode={this.setupReviewMode}
+                        trackingModeState={this.reviewConfig.trackingModeState}
+                        setupForStandardTrackingMode={
+                            this.setupForStandardTrackingMode
+                        }
                         setCurrentCategory={this.setCurrentCategory}
                         currentlyPlaying={this.state.currentlyPlaying}
                         setCurrentlyPlaying={this.setCurrentlyPlayingPublic}

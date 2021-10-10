@@ -179,6 +179,7 @@ class Playlist extends Component {
 
     loadReviews = () => {
         playlistCreator.loadReviews(this.props.sortType)
+        // console.log("🚀 ==> playlistCreator.entries", playlistCreator.entries)
         this.props.setPlaylist(playlistCreator.entries, true)
     }
 
@@ -228,6 +229,7 @@ class Playlist extends Component {
 
                     return (
                         <PlaylistItem
+                            key={file.id}
                             category={category}
                             ref={refs[file.id]}
                             scrollIntoView={scrollIntoView}
