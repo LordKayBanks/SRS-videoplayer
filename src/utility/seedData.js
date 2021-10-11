@@ -213,10 +213,10 @@ let reviewsOffline = {
     }
 }
 let reviewsOnline = {
-    'https://www.youtube.com/watch?v=ANdSdIlgsEw&ab_channel=ProgrammingwithMash': {
+    'https://www.youtube.com/watch?v=Glsby66vuLA&ab_channel=OnlineTutorials': {
         name: '27-2. How VLANs Changed the World.mp4',
         path:
-            'https://www.youtube.com/watch?v=ANdSdIlgsEw&ab_channel=ProgrammingwithMash',
+            'https://www.youtube.com/watch?v=Glsby66vuLA&ab_channel=OnlineTutorials',
         type: 'video/mp4',
         replayHistory: {
             'split-1': { count: 101, startTime: 0, endTime: 226 },
@@ -225,10 +225,10 @@ let reviewsOnline = {
         },
         lastReviewDate: 1613378871994
     },
-    'https://www.youtube.com/watch?v=p65AHm9MX80&ab_channel=freeCodeCamp.org': {
+    'https://www.youtube.com/watch?v=O8uUGEobo-Q&ab_channel=HiteshChoudhary': {
         name: '27-2. How VLANs Changed the World.mp4',
         path:
-            'https://www.youtube.com/watch?v=p65AHm9MX80&ab_channel=freeCodeCamp.org',
+            'https://www.youtube.com/watch?v=O8uUGEobo-Q&ab_channel=HiteshChoudhary',
         type: 'video/mp4',
         replayHistory: {
             'split-1': { count: 101, startTime: 0, endTime: 226 },
@@ -237,10 +237,10 @@ let reviewsOnline = {
         },
         lastReviewDate: 1613378871994
     },
-    'https://www.youtube.com/watch?v=0iB5IPoTDts&ab_channel=freeCodeCamp.org': {
+    'https://www.youtube.com/watch?v=En1lSiMjLvU&ab_channel=SteveGriffith-Prof3ssorSt3v3': {
         name: '27-2. How VLANs Changed the World.mp4',
         path:
-            'https://www.youtube.com/watch?v=0iB5IPoTDts&ab_channel=freeCodeCamp.org',
+            'https://www.youtube.com/watch?v=En1lSiMjLvU&ab_channel=SteveGriffith-Prof3ssorSt3v3',
         type: 'video/mp4',
         replayHistory: {
             'split-1': { count: 101, startTime: 0, endTime: 226 },
@@ -249,10 +249,10 @@ let reviewsOnline = {
         },
         lastReviewDate: 1613378871994
     },
-    'https://www.youtube.com/watch?v=RaTpreA0v7Q&ab_channel=freeCodeCamp.org': {
+    'https://www.youtube.com/watch?v=-0SVi3zQbRk&ab_channel=AlessandroCastellani': {
         name: '27-2. How VLANs Changed the World.mp4',
         path:
-            'https://www.youtube.com/watch?v=RaTpreA0v7Q&ab_channel=freeCodeCamp.org',
+            'https://www.youtube.com/watch?v=-0SVi3zQbRk&ab_channel=AlessandroCastellani',
         type: 'video/mp4',
         replayHistory: {
             'split-1': { count: 101, startTime: 0, endTime: 226 },
@@ -261,10 +261,10 @@ let reviewsOnline = {
         },
         lastReviewDate: 1613378871994
     },
-    'https://www.youtube.com/watch?v=IZj8hLrkABs&ab_channel=ChrisHawkes': {
+    'https://www.youtube.com/watch?v=izXHsZ57UPs&ab_channel=WebDevSimplified': {
         name: '27-2. How VLANs Changed the World.mp4',
         path:
-            'https://www.youtube.com/watch?v=IZj8hLrkABs&ab_channel=ChrisHawkes',
+            'https://www.youtube.com/watch?v=izXHsZ57UPs&ab_channel=WebDevSimplified',
         type: 'video/mp4',
         replayHistory: {
             'split-1': { count: 101, startTime: 0, endTime: 226 },
@@ -273,10 +273,10 @@ let reviewsOnline = {
         },
         lastReviewDate: 1613378871994
     },
-    'https://www.youtube.com/watch?v=TL41A_VGcWc&ab_channel=ChrisHawkes': {
+    'https://www.youtube.com/watch?v=3qiwtLp34A4&ab_channel=CalebCurry': {
         name: '27-2. How VLANs Changed the World.mp4',
         path:
-            'https://www.youtube.com/watch?v=TL41A_VGcWc&ab_channel=ChrisHawkes',
+            'https://www.youtube.com/watch?v=3qiwtLp34A4&ab_channel=CalebCurry',
         type: 'video/mp4',
         replayHistory: {
             'split-1': { count: 101, startTime: 0, endTime: 226 },
@@ -285,10 +285,10 @@ let reviewsOnline = {
         },
         lastReviewDate: 1613378871994
     },
-    'https://www.youtube.com/watch?v=ipwxYa-F1uY&ab_channel=freeCodeCamp.org': {
+    'https://www.youtube.com/watch?v=8rIUFMBTDik&ab_channel=JuniorDeveloperCentral': {
         name: '27-2. How VLANs Changed the World.mp4',
         path:
-            'https://www.youtube.com/watch?v=ipwxYa-F1uY&ab_channel=freeCodeCamp.org',
+            'https://www.youtube.com/watch?v=8rIUFMBTDik&ab_channel=JuniorDeveloperCentral',
         type: 'video/mp4',
         replayHistory: {
             'split-1': { count: 101, startTime: 0, endTime: 226 },
@@ -297,10 +297,9 @@ let reviewsOnline = {
         },
         lastReviewDate: 1613378871994
     },
-    'https://www.youtube.com/watch?v=pkYVOmU3MgA&ab_channel=freeCodeCamp.org': {
+    'https://www.youtube.com/watch?v=jP4hJqvMOns&ab_channel=djvlad': {
         name: 'This is my 1st Title.mp4',
-        path:
-            'https://www.youtube.com/watch?v=pkYVOmU3MgA&ab_channel=freeCodeCamp.org',
+        path: 'https://www.youtube.com/watch?v=jP4hJqvMOns&ab_channel=djvlad',
         type: 'video/mp4',
         replayHistory: {
             'split-1': { count: 101, startTime: 0, endTime: 226 },
@@ -314,23 +313,22 @@ let reviewsOnline = {
 // 1633__381_337_324
 // Math.floor(Math.random() * 999_999_999).toString().length;
 
-let reviews = reviewsOnline
-let isOnline = true
-//=========
-// let reviews = reviewsOffline
-// let isOnline = false
-//========
-let index = 1
 
-for (let key in reviews) {
-    let random = Math.floor(Math.random() * 999_999_999)
-    const fixed = 163
 
-    random = parseInt(`${fixed}${3}${random}`.padEnd(13, 0))
-    reviews[key].lastReviewDate = random
-    reviews[key]['id'] = uuid()
-    if (isOnline) reviews[key]['name'] = `'This is my Title ${index}.mp4'`
-    index++
+export default function setupInitialSeed({ isOnline = false }) {
+    let reviews = isOnline ? reviewsOnline : reviewsOffline
+    let index = 1
+
+    for (let key in reviews) {
+        let random = Math.floor(Math.random() * 999999999)
+        const fixed = 163
+
+        random = parseInt(`${fixed}${3}${random}`.padEnd(13, 0))
+        reviews[key].lastReviewDate = random
+        reviews[key]['id'] = uuid()
+        if (isOnline) reviews[key]['name'] = `'This is my Title ${index}.mp4'`
+        index++
+    }
+
+    localStorage.setItem('reviews', JSON.stringify(reviews))
 }
-
-localStorage.setItem('reviews', JSON.stringify(reviews))

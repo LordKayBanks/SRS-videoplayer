@@ -284,7 +284,7 @@ let unsubscribeToReview = null
 export function setupReviewMode({
   activate = true,
   loopCurrentSplit = false,
-  trackingModeState,
+  trackingMode,
   videoInfo
 }) {
   const deactivate = !activate
@@ -295,8 +295,8 @@ export function setupReviewMode({
     return notify.display('Review: Stopped!')
   }
 
-  if (trackingModeState === 'active') {
-    trackingModeState = 'inactive'
+  if (trackingMode === 'active') {
+    trackingMode = 'inactive'
     trackingMode(null, false)
   }
 

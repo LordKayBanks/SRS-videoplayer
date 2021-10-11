@@ -10,7 +10,7 @@
 }
 
 label {
-    /* margin: 5px; */
+    margin: 5px 2px;
     border-radius: 20%;
     cursor: pointer;
     display: flex;
@@ -28,19 +28,19 @@ label * {
 label:hover,
 label[data-mode='active'],
 label.active,
-input[type='checkbox']:checked + label {
+input[type='checkbox']:checked + label,
+.tracking-btn-active,
+.review-btn-active {
     background-color: var(--hover-color);
 }
 
-.review-btn-active {
-    // background-color: red;
-}
 .review-btn-loop {
     background-color: red;
 }
-.review-btn-inactive {
-    // background-color: red;
-}
+// .review-btn-active {
+// }
+// .review-btn-inactive {
+// }
 // ===============
 
 .disabled {
@@ -50,15 +50,13 @@ input[type='checkbox']:checked + label {
 input[type='checkbox']:checked + label > svg {
     fill: var(--active-fill-color);
 }
-.shuffle {
-    /* display: none; */
-}
+
 .shuffle svg {
-    padding: 9px;
+    // padding: 9px;
 }
 .next svg,
 .previous svg {
-    padding: 8px;
+    // padding: 8px;
 }
 .repeat[data-mode='no-repeat'] {
     fill: #565656;

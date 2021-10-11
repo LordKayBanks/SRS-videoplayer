@@ -10,8 +10,14 @@ import { render } from 'react-dom'
 // import './storage.js'
 // import './keyboard.js'
 
-import './utility/seedData.js'
+import setupInitialSeed from './utility/seedData.js'
 import { keepTrackOfReviews } from './utility/startup'
+
+if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
+    setupInitialSeed({ isOnline: true })
+} else {
+    setupInitialSeed({ isOnline: false })
+}
 
 keepTrackOfReviews()
 

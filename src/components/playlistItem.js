@@ -10,6 +10,7 @@ export default function PlaylistItem({
     ref,
     fileSeparator,
     category,
+    sortType,
     setCurrentCategory,
     scrollIntoView,
     isDisabled
@@ -43,8 +44,8 @@ export default function PlaylistItem({
                 setCurrentlyPlaying(file.id, () => {})
             }}
         >
-            {category && (
-                <label className='category-checkbox'>
+            {sortType !== 'playlist' && category && (
+                <label className="category-checkbox">
                     <input
                         className="category"
                         type="checkbox"

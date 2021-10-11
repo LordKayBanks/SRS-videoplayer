@@ -50,7 +50,6 @@ export const playlistCreator = {
             localStorage.setItem('playlist', JSON.stringify(newPlaylist))
         }
 
-        //  console.log('🚀 files', files)
     }
 }
 

@@ -12,20 +12,40 @@ import PlaylistItem from './playlistItem'
 class Playlist extends Component {
     state = {
         drag: false,
-        dragClassName: ''
-        // playlist: [],
-        // currentlyPlaying: null
+        dragClassName: '',
+        playlist: []
     }
 
     dropRef = React.createRef()
+    isSameArray = (arrayOne, arrayTwo) => {
+        return (
+            arrayOne.length === arrayTwo.length &&
+            arrayOne.every(
+                (o, i) =>
+                    Object.keys(o).length === Object.keys(arrayTwo[i]).length &&
+                    Object.keys(o).every(k => o[k] === arrayTwo[i][k])
+            )
+        )
+    }
 
     componentDidUpdate(prevProps, prevState) {
-        if (prevProps.sortType !== this.props.sortType)
-            if (this.props.sortType === 'playlist') {
-                this.loadPlaylist()
-            } else {
+        if (prevProps.sortType !== this.props.sortType) {
+            if (this.props.sortType !== 'playlist') {
                 this.loadReviews()
+            } else {
+                this.loadPlaylist()
             }
+        }
+
+        const isSameArray = this.isSameArray(
+            prevProps.playlist,
+            this.props.playlist
+        )
+
+        if (!isSameArray) {
+            // this.loadPlaylist()
+            this.setState({ playlist: this.props.playlist })
+        }
     }
 
     componentDidMount() {
@@ -86,55 +106,61 @@ class Playlist extends Component {
         if (event.dataTransfer) {
             let videoURL = event.dataTransfer.getData('Text')
 
-            if (videoURL) {
-                let playlistItem = {
-                    name: videoURL,
-                    path: videoURL,
-                    type: 'external',
-                    id: uuid()
-                }
+            if (!videoURL) return
 
-                if (parseYoutubeUrl(videoURL)) {
-                    const videoInfo = await this.getMetadata(videoURL)
-
-                    if (videoInfo)
-                        playlistItem = {
-                            name: videoInfo.title,
-                            path: videoURL,
-                            type: 'video/external',
-                            id: uuid(),
-                            author: videoInfo.author_name,
-                            source: videoInfo.provider_name
-                        }
-                }
-
-                playlistCreator.loadVideo([playlistItem])
-                this.props.setPlaylist(
-                    {
-                        playlist: playlistCreator.entries
-                        // currentlyPlaying: playlistItem.id
-                    },
-                    () => {
-                        // this.props.handlePlay(playlistItem.path)
-                        //  this.props.handlePlay(videoURL)
-                    }
-                )
-
-                this.setState({
-                    dragClassName: ''
-                })
+            let playlistItem = {
+                name: videoURL,
+                path: videoURL,
+                type: 'external',
+                id: uuid()
             }
-        } //else ... Some (less modern) browsers don't support dataTransfer objects.
+
+            if (parseYoutubeUrl(videoURL)) {
+                const videoInfo = await this.getMetadata(videoURL)
+
+                if (videoInfo) {
+                    playlistItem = {
+                        name: videoInfo.title,
+                        path: videoURL,
+                        type: 'video/external',
+                        id: uuid(),
+                        author: videoInfo.author_name,
+                        source: videoInfo.provider_name
+                    }
+                }
+            }
+
+            playlistCreator.loadVideo([playlistItem])
+            this.props.setPlaylist(
+                {
+                    playlist: playlistCreator.entries
+                },
+                false,
+                () => {
+                    console.log(
+                        '🚀 ==> playlistCreator.entries',
+                        playlistCreator.entries
+                    )
+                }
+            )
+
+            this.setState({
+                dragClassName: ''
+            })
+        } else if (event.stopPropagation) {
+            event.stopPropagation()
+        } else {
+            event.cancelBubble = true
+        }
+        return false
+        //else ... Some (less modern) browsers don't support dataTransfer objects.
         // =======================
 
         // Use stopPropagation and cancelBubble to prevent the browser
         // from performing the default `drop` action for this element.
-        else if (event.stopPropagation) event.stopPropagation()
-        else event.cancelBubble = true
-
-        return false
     }
 
+    //========================================
     handleDrag = e => {
         e.preventDefault()
         e.stopPropagation()
@@ -173,13 +199,13 @@ class Playlist extends Component {
             drop([...e.dataTransfer.items], playlistCreator.loadVideo)
             e.dataTransfer.clearData()
             this.dragCounter = 0
-            this.props.setPlaylist(playlistCreator.entries, () => {})
+            this.props.setPlaylist(playlistCreator.entries, false, () => {})
         }
     }
+    //========================================
 
     loadReviews = () => {
         playlistCreator.loadReviews(this.props.sortType)
-        // console.log("🚀 ==> playlistCreator.entries", playlistCreator.entries)
         this.props.setPlaylist(playlistCreator.entries, true)
     }
 
@@ -196,19 +222,10 @@ class Playlist extends Component {
 
         const scrollIntoView = id => {
             if (!refs) return
-            // console.log('🚀 ==> render ==> refs[id].current', refs[id].current)
             refs[id].current?.scrollIntoView({
                 behavior: 'smooth',
                 block: 'start'
             })
-
-            // if (!refs || !this.dropRef?.current) return
-
-            // const rect = refs && refs[id].current.getBoundingClientRect()
-
-            // if (rect.top < 0 || rect.bottom > this.dropRef.clientHeight) {
-            //     refs[id].current?.scrollIntoView()
-            // }
         }
 
         return (
@@ -216,7 +233,7 @@ class Playlist extends Component {
                 className={`playlist ${this.props.hidePlaylist} ${this.state.dragClassName}`}
                 ref={this.props.sortType === 'playlist' ? this.dropRef : null}
             >
-                {this.props.playlist.map((file, index) => {
+                {this.state.playlist.map((file, index) => {
                     const isSeparator = file.type === 'separator'
 
                     const category =
@@ -229,6 +246,7 @@ class Playlist extends Component {
 
                     return (
                         <PlaylistItem
+                            sortType={this.props.sortType}
                             key={file.id}
                             category={category}
                             ref={refs[file.id]}

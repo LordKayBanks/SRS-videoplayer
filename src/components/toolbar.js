@@ -17,7 +17,8 @@ export default function Toolbar({
     handleNext,
     toggleRepeatMode,
     repeatMode,
-    setCurrentCategory,trackingModeState,
+    setCurrentCategory,
+    trackingMode,
     setupForStandardTrackingMode,
     setupReviewMode,
     reviewMode,
@@ -69,7 +70,7 @@ export default function Toolbar({
             <Buttons
                 reviewMode={reviewMode}
                 setupReviewMode={setupReviewMode}
-                trackingModeState={trackingModeState}
+                trackingMode={trackingMode}
                 setupForStandardTrackingMode={setupForStandardTrackingMode}
                 horizontalButtons={`${toolbarOpen ? 'horizontal-buttons' : ''}`}
                 boost={2}

@@ -3,7 +3,7 @@ import './buttons.scss'
 import React from 'react'
 
 export default function Buttons({
-    trackingModeState,
+    trackingMode,
     setupForStandardTrackingMode,
     setupReviewMode,
     reviewMode,
@@ -22,11 +22,11 @@ export default function Buttons({
 }) {
     const changeReviewMode = e => {
         if (reviewMode === 'active') {
-            setupReviewMode({ activate: true })
-        } else if (reviewMode === 'loop') {
             setupReviewMode({ loopCurrentSplit: true })
-        } else if (reviewMode === 'inactive') {
+        } else if (reviewMode === 'loop') {
             setupReviewMode({ activate: false })
+        } else if (reviewMode === 'inactive') {
+            setupReviewMode({ activate: true })
         }
     }
 
@@ -52,7 +52,7 @@ export default function Buttons({
                 className="shuffle"
                 title="Shuffle Playlist"
             >
-                <svg width="14" height="14" viewBox="0 0 16 16">
+                <svg width="16" height="16" viewBox="0 0 16 16">
                     <path d="M6.6,5.2 L1.4,0 L0,1.4 L5.2,6.6 L6.6,5.2 L6.6,5.2 Z M10.5,0 L12.5,2 L0,14.6 L1.4,16 L14,3.5 L16,5.5 L16,0 L10.5,0 L10.5,0 Z M10.8,9.4 L9.4,10.8 L12.5,13.9 L10.5,15.9 L16,15.9 L16,10.4 L14,12.4 L10.8,9.4 L10.8,9.4 Z"></path>
                 </svg>
             </label>
@@ -60,16 +60,16 @@ export default function Buttons({
             <label
                 onClick={setupForStandardTrackingMode}
                 id="trackingMode"
-                 className={`tracking-btn-${trackingModeState}`}
+                 className={`tracking-btn-${trackingMode}`}
                 title="Tracking Mode"
             >
-                <svg width="30" height="22" viewBox="0 0 48 48">
+                <svg width="22" height="22" viewBox="0 0 48 48">
                     <text
                         x="50%"
                         y="50%"
                         alignmentBaseline="middle"
                         textAnchor="middle"
-                        fontSize="34"
+                        fontSize="30"
                     >
                         T
                     </text>
@@ -83,13 +83,13 @@ export default function Buttons({
                 data-mode="inactive"
                 title="Review Mode"
             >
-                <svg width="30" height="22" viewBox="0 0 48 48">
+                <svg width="22" height="22" viewBox="0 0 48 48">
                     <text
                         x="50%"
                         y="50%"
                         alignmentBaseline="middle"
                         textAnchor="middle"
-                        fontSize="34"
+                        fontSize="30"
                     >
                         R
                     </text>
@@ -118,7 +118,7 @@ export default function Buttons({
                 data-mode="4x"
                 title="Adjust player's speed (2X [default], 3X, 3.5X, 4X, 4.5X and 5X) (Shortcut: S)"
             >
-                <svg width="30" height="22" viewBox="0 0 48 48">
+                <svg width="22" height="22" viewBox="0 0 48 48">
                     <text
                         x="50%"
                         y="50%"
@@ -165,7 +165,7 @@ export default function Buttons({
                 className="next"
                 title="Play Next Song (Ctrl + Shift + N or Command + Shift + N)"
             >
-                <svg width="16" height="16" viewBox="0 0 24 24">
+                <svg width="22" height="22" viewBox="0 0 24 24">
                     <path
                         d="M22.2,10.6l-9-5.4c-1-0.6-2.2,0.2-2.2,1.4v3.2L3.2,5.2C2.2,4.6,1,5.4,1,6.6v10.7c0,1.2,1.2,2,2.2,1.4l7.8-4.6   v3.2c0,1.2,1.2,2,2.2,1.4l9-5.4C23.3,12.8,23.3,11.2,22.2,10.6z"
                         id="next"

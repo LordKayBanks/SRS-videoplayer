@@ -135,10 +135,10 @@ export function groupReviewsBy({
         let partitionKey = partitionFunc(item[innerKey])
 
         if (resultMap[partitionKey]?.length) {
-            resultMap[partitionKey].push({ ...item, category: partitionKey })
+            resultMap[partitionKey].push({ ...item, category: partitionKey,isReview: true })
         } else {
             resultMap[partitionKey] = []
-            resultMap[partitionKey].push({ ...item, category: partitionKey })
+            resultMap[partitionKey].push({ ...item, category: partitionKey,isReview: true })
         }
     }
 
@@ -152,7 +152,8 @@ export function groupReviewsBy({
                 name: partitionFunc(
                     sortedItems[sortedItems.length - 1][innerKey]
                 ),
-                id: uuid()
+                id: uuid(),
+                isReview: true
             },
             ...sortedItems
         ]
