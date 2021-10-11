@@ -1142,8 +1142,8 @@ class App extends Component {
             muted,
             loop,
             played,
-            loaded,
-            duration,
+            // loaded,
+            // duration,
             playbackRate,
             pip
         } = this.state
