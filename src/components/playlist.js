@@ -1,271 +1,257 @@
-import './playlist.scss'
+import "./playlist.scss";
 
-import React, { Component } from 'react'
+import React, { Component } from "react";
 
-import axios from 'axios'
-import { drop } from '../player/drag'
-import { parseYoutubeUrl } from '../utility/youtube'
-import playlistCreator from '../utility/playlistCreator'
-import { uuid } from 'uuidv4'
-import PlaylistItem from './playlistItem'
+import axios from "axios";
+import { drop } from "../player/drag";
+import { parseYoutubeUrl } from "../utility/youtube";
+import playlistCreator from "../utility/playlistCreator";
+import { uuid } from "uuidv4";
+import PlaylistItem from "./playlistItem";
 
 class Playlist extends Component {
-    state = {
-        drag: false,
-        dragClassName: '',
-        playlist: []
-    }
+	state = {
+		drag: false,
+		dragClassName: "",
+		playlist: [],
+	};
 
-    dropRef = React.createRef()
-    isSameArray = (arrayOne, arrayTwo) => {
-        return (
-            arrayOne.length === arrayTwo.length &&
-            arrayOne.every(
-                (o, i) =>
-                    Object.keys(o).length === Object.keys(arrayTwo[i]).length &&
-                    Object.keys(o).every(k => o[k] === arrayTwo[i][k])
-            )
-        )
-    }
+	dropRef = React.createRef();
+	isSameArray = (arrayOne, arrayTwo) => {
+		return (
+			arrayOne.length === arrayTwo.length &&
+			arrayOne.every(
+				(o, i) =>
+					Object.keys(o).length === Object.keys(arrayTwo[i]).length &&
+					Object.keys(o).every((k) => o[k] === arrayTwo[i][k])
+			)
+		);
+	};
 
-    componentDidUpdate(prevProps, prevState) {
-        if (prevProps.sortType !== this.props.sortType) {
-            if (this.props.sortType !== 'playlist') {
-                this.loadReviews()
-            } else {
-                this.loadPlaylist()
-            }
-        }
+	componentDidUpdate(prevProps, prevState) {
+		if (prevProps.sortType !== this.props.sortType) {
+			if (this.props.sortType !== "playlist") {
+				this.loadReviews();
+			} else {
+				this.loadPlaylist();
+			}
+		}
 
-        const isSameArray = this.isSameArray(
-            prevProps.playlist,
-            this.props.playlist
-        )
+		const isSameArray = this.isSameArray(prevProps.playlist, this.props.playlist);
 
-        if (!isSameArray) {
-            // this.loadPlaylist()
-            this.setState({ playlist: this.props.playlist })
-        }
-    }
+		if (!isSameArray) {
+			// this.loadPlaylist()
+			this.setState({ playlist: this.props.playlist });
+		}
+	}
 
-    componentDidMount() {
-        if (this.props.sortType === 'playlist') {
-            this.loadPlaylist()
-        } else {
-            this.loadReviews()
-        }
+	componentDidMount() {
+		if (this.props.sortType === "playlist") {
+			this.loadPlaylist();
+		} else {
+			this.loadReviews();
+		}
 
-        let div = this.dropRef.current
+		let div = this.dropRef.current;
 
-        if (!div) return
-        div.addEventListener('dragstart', this.handleTextDropStart)
-        div.addEventListener('drop', this.handleTextDropEnd)
-        //==
-        div.addEventListener('dragenter', this.handleDragIn)
-        div.addEventListener('dragleave', this.handleDragOut)
-        div.addEventListener('dragover', this.handleDrag)
-        div.addEventListener('drop', this.handleFileDrop)
-    }
+		if (!div) return;
+		div.addEventListener("dragstart", this.handleTextDropStart);
+		div.addEventListener("drop", this.handleTextDropEnd);
+		//==
+		div.addEventListener("dragenter", this.handleDragIn);
+		div.addEventListener("dragleave", this.handleDragOut);
+		div.addEventListener("dragover", this.handleDrag);
+		div.addEventListener("drop", this.handleFileDrop);
+	}
 
-    componentWillUnmount() {
-        let div = this.dropRef.current
+	componentWillUnmount() {
+		let div = this.dropRef.current;
 
-        if (!div) return
-        div.removeEventListener('dragstart', this.handleTextDropStart)
-        div.removeEventListener('drop', this.handleTextDropEnd)
-        //==
-        div.removeEventListener('dragenter', this.handleDragIn)
-        div.removeEventListener('dragleave', this.handleDragOut)
-        div.removeEventListener('dragover', this.handleDrag)
-        div.removeEventListener('drop', this.handleFileDrop)
-    }
+		if (!div) return;
+		div.removeEventListener("dragstart", this.handleTextDropStart);
+		div.removeEventListener("drop", this.handleTextDropEnd);
+		//==
+		div.removeEventListener("dragenter", this.handleDragIn);
+		div.removeEventListener("dragleave", this.handleDragOut);
+		div.removeEventListener("dragover", this.handleDrag);
+		div.removeEventListener("drop", this.handleFileDrop);
+	}
 
-    handleTextDropStart = event => {
-        //  if (this.props.sortType !== 'playlist')
-        //    return this.setState({ drag: true, dragClassName: 'wrong-list' })
+	handleTextDropStart = (event) => {
+		//  if (this.props.sortType !== 'playlist')
+		//    return this.setState({ drag: true, dragClassName: 'wrong-list' })
 
-        if (event.dataTransfer) {
-            // Note: textData is empty here for Safari and Google Chrome :(
-            event.dataTransfer.getData('Text')
+		if (event.dataTransfer) {
+			// Note: textData is empty here for Safari and Google Chrome :(
+			event.dataTransfer.getData("Text");
 
-            let newText = '...' //Modify the data being dragged BEFORE it is dropped.
+			let newText = "..."; //Modify the data being dragged BEFORE it is dropped.
 
-            event.dataTransfer.setData('Text', newText)
-        }
-    }
+			event.dataTransfer.setData("Text", newText);
+		}
+	};
 
-    getMetadata = async url => {
-        const videoUrl = url
-        const requestUrl = `http://youtube.com/oembed?url=${videoUrl}&format=json`
-        const result = await axios.get(requestUrl)
+	getMetadata = async (url) => {
+		const videoUrl = url;
+		const requestUrl = `http://youtube.com/oembed?url=${videoUrl}&format=json`;
+		const result = await axios.get(requestUrl);
+		return result.data;
+	};
 
-        return result.data
-    }
+	handleTextDropEnd = async (event) => {
+		if (event.dataTransfer) {
+			let videoURL = event.dataTransfer.getData("Text");
 
-    handleTextDropEnd = async event => {
-        if (event.dataTransfer) {
-            let videoURL = event.dataTransfer.getData('Text')
+			if (!videoURL) return;
 
-            if (!videoURL) return
+			let playlistItem = {
+				name: videoURL,
+				path: videoURL,
+				type: "external",
+				id: uuid(),
+			};
 
-            let playlistItem = {
-                name: videoURL,
-                path: videoURL,
-                type: 'external',
-                id: uuid()
-            }
+			if (parseYoutubeUrl(videoURL)) {
+				const videoInfo = await this.getMetadata(videoURL);
 
-            if (parseYoutubeUrl(videoURL)) {
-                const videoInfo = await this.getMetadata(videoURL)
+				if (videoInfo) {
+					playlistItem = {
+						name: videoInfo.title,
+						path: videoURL,
+						type: "video/external",
+						id: uuid(),
+						author: videoInfo.author_name,
+						source: videoInfo.provider_name,
+					};
+				}
+			}
 
-                if (videoInfo) {
-                    playlistItem = {
-                        name: videoInfo.title,
-                        path: videoURL,
-                        type: 'video/external',
-                        id: uuid(),
-                        author: videoInfo.author_name,
-                        source: videoInfo.provider_name
-                    }
-                }
-            }
+			playlistCreator.loadVideo([playlistItem]);
+			this.props.setPlaylist(
+				{
+					playlist: playlistCreator.entries,
+				},
+				false,
+				() => {
+					console.log("🚀 ==> playlistCreator.entries", playlistCreator.entries);
+				}
+			);
 
-            playlistCreator.loadVideo([playlistItem])
-            this.props.setPlaylist(
-                {
-                    playlist: playlistCreator.entries
-                },
-                false,
-                () => {
-                    console.log(
-                        '🚀 ==> playlistCreator.entries',
-                        playlistCreator.entries
-                    )
-                }
-            )
+			this.setState({
+				dragClassName: "",
+			});
+		} else if (event.stopPropagation) {
+			event.stopPropagation();
+		} else {
+			event.cancelBubble = true;
+		}
+		return false;
+		//else ... Some (less modern) browsers don't support dataTransfer objects.
+		// =======================
 
-            this.setState({
-                dragClassName: ''
-            })
-        } else if (event.stopPropagation) {
-            event.stopPropagation()
-        } else {
-            event.cancelBubble = true
-        }
-        return false
-        //else ... Some (less modern) browsers don't support dataTransfer objects.
-        // =======================
+		// Use stopPropagation and cancelBubble to prevent the browser
+		// from performing the default `drop` action for this element.
+	};
 
-        // Use stopPropagation and cancelBubble to prevent the browser
-        // from performing the default `drop` action for this element.
-    }
+	//========================================
+	handleDrag = (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+	};
 
-    //========================================
-    handleDrag = e => {
-        e.preventDefault()
-        e.stopPropagation()
-    }
+	handleDragIn = (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		this.dragCounter++;
+		//  if (this.props.sortType !== 'playlist')
+		//    return this.setState({ drag: true, dragClassName: 'wrong-list' })
 
-    handleDragIn = e => {
-        e.preventDefault()
-        e.stopPropagation()
-        this.dragCounter++
-        //  if (this.props.sortType !== 'playlist')
-        //    return this.setState({ drag: true, dragClassName: 'wrong-list' })
+		if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+			this.setState({ drag: true, dragClassName: "on-drag" });
+		}
+	};
 
-        if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-            this.setState({ drag: true, dragClassName: 'on-drag' })
-        }
-    }
+	handleDragOut = (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		this.dragCounter--;
+		this.setState({ dragClassName: "" });
 
-    handleDragOut = e => {
-        e.preventDefault()
-        e.stopPropagation()
-        this.dragCounter--
-        this.setState({ dragClassName: '' })
+		if (this.dragCounter === 0) {
+			this.setState({ drag: false, dragClassName: "" });
+		}
+	};
 
-        if (this.dragCounter === 0) {
-            this.setState({ drag: false, dragClassName: '' })
-        }
-    }
+	handleFileDrop = (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		this.setState({ drag: false, dragClassName: "" });
 
-    handleFileDrop = e => {
-        e.preventDefault()
-        e.stopPropagation()
-        this.setState({ drag: false, dragClassName: '' })
+		if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+			// this.props.handleFileDrop(e.dataTransfer.files)
+			drop([...e.dataTransfer.items], playlistCreator.loadVideo);
+			e.dataTransfer.clearData();
+			this.dragCounter = 0;
+			this.props.setPlaylist(playlistCreator.entries, false, () => {});
+		}
+	};
+	//========================================
 
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            // this.props.handleFileDrop(e.dataTransfer.files)
-            drop([...e.dataTransfer.items], playlistCreator.loadVideo)
-            e.dataTransfer.clearData()
-            this.dragCounter = 0
-            this.props.setPlaylist(playlistCreator.entries, false, () => {})
-        }
-    }
-    //========================================
+	loadReviews = () => {
+		playlistCreator.loadReviews(this.props.sortType);
+		this.props.setPlaylist(playlistCreator.entries, true);
+	};
 
-    loadReviews = () => {
-        playlistCreator.loadReviews(this.props.sortType)
-        this.props.setPlaylist(playlistCreator.entries, true)
-    }
+	loadPlaylist = () => {
+		playlistCreator.loadPlaylistFromStorage();
+		this.props.setPlaylist(playlistCreator.entries, false);
+	};
 
-    loadPlaylist = () => {
-        playlistCreator.loadPlaylistFromStorage()
-        this.props.setPlaylist(playlistCreator.entries, false)
-    }
+	render() {
+		const refs = this.props.playlist.reduce((acc, file) => {
+			acc[file.id] = React.createRef();
+			return acc;
+		}, {});
 
-    render() {
-        const refs = this.props.playlist.reduce((acc, file) => {
-            acc[file.id] = React.createRef()
-            return acc
-        }, {})
-
-        const scrollIntoView = id => {
-            if (!refs) return
-            refs[id].current?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            })
-        }
-
-        return (
-            <ul
-                className={`playlist ${this.props.hidePlaylist} ${this.state.dragClassName}`}
-                ref={this.props.sortType === 'playlist' ? this.dropRef : null}
-            >
-                {this.state.playlist.map((file, index) => {
-                    const isSeparator = file.type === 'separator'
-
-                    const category =
-                        file.type === 'separator' ? file.name : null
-
-                    let title = isSeparator ? file.name : file.split
-                    let isDisabled = isSeparator ? true : false
-                    let durationTextContent = isSeparator ? ' ' : '--:--'
-                    let fileSeparator = isSeparator ? 'file-separator' : ''
-
-                    return (
-                        <PlaylistItem
-                            sortType={this.props.sortType}
-                            key={file.id}
-                            category={category}
-                            ref={refs[file.id]}
-                            scrollIntoView={scrollIntoView}
-                            title={title}
-                            durationTextContent={durationTextContent}
-                            fileSeparator={fileSeparator}
-                            file={file}
-                            currentlyPlaying={this.props.currentlyPlaying}
-                            setCurrentlyPlaying={this.props.setCurrentlyPlaying}
-                            setCurrentCategory={this.props.setCurrentCategory}
-                            isDisabled={isDisabled}
-                        ></PlaylistItem>
-                    )
-                    // file.e = LI
-                })}
-            </ul>
-        )
-    }
+		const scrollIntoView = (id) => {
+			if (!refs) return;
+			refs[id].current?.scrollIntoView({
+				behavior: "smooth",
+				block: "start",
+			});
+		};
+		return (
+			<ul
+				className={`playlist ${this.props.hidePlaylist} ${this.state.dragClassName}`}
+				ref={this.props.sortType === "playlist" ? this.dropRef : null}>
+				{this.state.playlist.map((file, index) => {
+					const isSeparator = file.type === "separator";
+					const category = file.type === "separator" ? file.name : null;
+					let title = isSeparator ? file.name : file.split;
+					let isDisabled = isSeparator ? true : false;
+					let durationTextContent = isSeparator ? " " : "--:--";
+					let fileSeparator = isSeparator ? "file-separator" : "";
+					return (
+						<PlaylistItem
+							sortType={this.props.sortType}
+							key={file.id}
+							category={category}
+							ref={refs[file.id]}
+							scrollIntoView={scrollIntoView}
+							title={title}
+							durationTextContent={durationTextContent}
+							fileSeparator={fileSeparator}
+							file={file}
+							currentlyPlaying={this.props.currentlyPlaying}
+							setCurrentlyPlaying={this.props.setCurrentlyPlaying}
+							setCurrentCategory={this.props.setCurrentCategory}
+							isDisabled={isDisabled}></PlaylistItem>
+					);
+					// file.e = LI
+				})}
+			</ul>
+		);
+	}
 }
 
-export default Playlist
+export default Playlist;

@@ -19,7 +19,7 @@ export default function Toolbar({
     repeatMode,
     setCurrentCategory,
     trackingMode,
-    setupForStandardTrackingMode,
+    setupTrackingMode,
     setupReviewMode,
     reviewMode,
     setSortType,
@@ -32,7 +32,6 @@ export default function Toolbar({
             // playNewVideo(e.target.value)
         }
     }
-
     return (
         <div
             className={`toolbar ${
@@ -71,7 +70,7 @@ export default function Toolbar({
                 reviewMode={reviewMode}
                 setupReviewMode={setupReviewMode}
                 trackingMode={trackingMode}
-                setupForStandardTrackingMode={setupForStandardTrackingMode}
+                setupTrackingMode={setupTrackingMode}
                 horizontalButtons={`${toolbarOpen ? 'horizontal-buttons' : ''}`}
                 boost={2}
                 speed={2}

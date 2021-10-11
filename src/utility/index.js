@@ -14,7 +14,6 @@ export function sortReviews(reviews, sortCriteria) {
                 endTime: review.replayHistory[key].endTime,
                 split: key
             }))
-
             return updatedReview.map(split => {
                 return { ...review, ...split, id: uuid() }
             })
@@ -27,7 +26,6 @@ export function sortReviews(reviews, sortCriteria) {
             result = result.sort(
                 (reviewA, reviewB) => reviewB.replayCount - reviewA.replayCount
             )
-
             break
         }
 
@@ -35,7 +33,6 @@ export function sortReviews(reviews, sortCriteria) {
             result = result.sort(
                 (reviewA, reviewB) => reviewA.replayCount - reviewB.replayCount
             )
-
             break
         }
 
@@ -88,7 +85,6 @@ export function sortReviews(reviews, sortCriteria) {
                             reviewA.lastReviewDate - reviewB.lastReviewDate
                     )
             })
-
             break
         }
 
@@ -108,7 +104,6 @@ export function sortReviews(reviews, sortCriteria) {
                             reviewB.lastReviewDate - reviewA.lastReviewDate
                     )
             })
-
             break
         }
 
@@ -135,10 +130,18 @@ export function groupReviewsBy({
         let partitionKey = partitionFunc(item[innerKey])
 
         if (resultMap[partitionKey]?.length) {
-            resultMap[partitionKey].push({ ...item, category: partitionKey,isReview: true })
+            resultMap[partitionKey].push({
+                ...item,
+                category: partitionKey,
+                isReview: true
+            })
         } else {
             resultMap[partitionKey] = []
-            resultMap[partitionKey].push({ ...item, category: partitionKey,isReview: true })
+            resultMap[partitionKey].push({
+                ...item,
+                category: partitionKey,
+                isReview: true
+            })
         }
     }
 
@@ -158,7 +161,6 @@ export function groupReviewsBy({
             ...sortedItems
         ]
     }
-
     return result
 }
 export function dateToDescription(myDate) {
@@ -180,7 +182,6 @@ export function dateToDescription(myDate) {
     } else {
         result = moment(myDate).fromNow()
     }
-
     return result
 }
 export function getFileDirectory(filePath) {
@@ -216,7 +217,6 @@ export const toMinutesSeconds = (seconds, getFullFormat = true) => {
     const minutes = (seconds % 3600) / 60
     const fullFormat = [hours, minutes, seconds % 60].map(format).join(':')
     const hourMinuteOnlyFormat = [hours, minutes].map(format).join(':')
-
     return getFullFormat ? fullFormat : hourMinuteOnlyFormat
 }
 export const getVideoSplitFactor = duration => {
@@ -227,14 +227,12 @@ export const getVideoSplitFactor = duration => {
     else if (duration >= 10 * 60) videoSplit = 4
     else if (duration >= 5 * 60) videoSplit = 2
     else videoSplit = 1
-
     return videoSplit
 }
 export const convertToNearest30 = num => Math.round(num / 30) * 30
 export const convertToNearestX = (num, X) => Math.floor(num / X) * X
 export const handleMultipleKeyPress = (actionOne, actionTwo) => {
     const multipleKeysMap = {}
-
     return evt => {
         let { keyCode, type } = evt || Event // to deal with IE
         let isKeyDown = type === 'keydown'
