@@ -114,7 +114,7 @@ class App extends Component {
 
     setVideoPosition = value => {
         this.setState({ currentTime: parseFloat(value) }, () =>
-            this.player.seekTo(parseFloat(value))
+            this.player?.seekTo(parseFloat(value))
         )
     }
 
@@ -155,7 +155,6 @@ class App extends Component {
             const nextPlayableIndex = currentlyPlayingIndex - 1
             const nextPlayableIndexOBJ = this.state.playlist[nextPlayableIndex]
             const playableUniqueID = nextPlayableIndexOBJ['id']
-
             return this.handlePrevious(null, playableUniqueID)
         }
 
@@ -206,7 +205,6 @@ class App extends Component {
             const nextPlayableIndex = currentlyPlayingIndex + 1
             const nextPlayableIndexOBJ = this.state.playlist[nextPlayableIndex]
             const playableUniqueID = nextPlayableIndexOBJ['id']
-
             return this.handleNext(null, playableUniqueID)
         }
 
@@ -470,7 +468,7 @@ class App extends Component {
 
     handleSeekMouseUp = e => {
         this.setState({ seeking: false })
-        this.player.seekTo(parseFloat(e.target.value))
+        this.player?.seekTo(parseFloat(e.target.value))
     }
 
     handleProgress = state => {
@@ -538,14 +536,14 @@ class App extends Component {
             this.setupReviewMode({ activate: false })
         }
 
-        let videoSplit = getVideoSplitFactor(this.player.getDuration())
+        let videoSplit = getVideoSplitFactor(this.player?.getDuration())
 
         this.trackingConfig.interval = parseInt(
-            this.player.getDuration() / videoSplit
+            this.player?.getDuration() / videoSplit
         )
 
         this.trackingConfig.startOffset = convertToNearestX(
-            this.player.getCurrentTime(),
+            this.player?.getCurrentTime(),
             this.trackingConfig.interval
         )
         //====================
@@ -570,13 +568,13 @@ class App extends Component {
         } else {
             if (renormalize) {
                 this.trackingConfig.startPosition = Math.max(
-                    convertToNearest30(this.player.getCurrentTime()) - offSet,
+                    convertToNearest30(this.player?.getCurrentTime()) - offSet,
                     0
                 )
 
                 this.trackingConfig.endPosition = Math.min(
                     this.trackingConfig.startPosition + offSet,
-                    this.player.getDuration()
+                    this.player?.getDuration()
                 )
             } else {
                 this.trackingConfig.startPosition = Math.max(
@@ -587,7 +585,7 @@ class App extends Component {
                 this.trackingConfig.endPosition = Math.min(
                     this.trackingConfig.startPosition +
                         this.trackingConfig.interval,
-                    this.player.getDuration()
+                    this.player?.getDuration()
                 )
             }
 
@@ -595,7 +593,7 @@ class App extends Component {
 
             const minDurationForVideoSplitFactor = 5 * 60
 
-            this.player.getDuration() < minDurationForVideoSplitFactor
+            this.player?.getDuration() < minDurationForVideoSplitFactor
                 ? this.setVideoPosition(0)
                 : this.setVideoPosition(
                       parseInt(this.trackingConfig.startPosition)
@@ -603,9 +601,9 @@ class App extends Component {
 
             this.trackingConfig.unsubscribe = setInterval(() => {
                 if (
-                    this.player.getCurrentTime() >=
+                    this.player?.getCurrentTime() >=
                         this.trackingConfig.endPosition - 5 ||
-                    this.player.getCurrentTime() <
+                    this.player?.getCurrentTime() <
                         this.trackingConfig.startPosition
                 ) {
                     this.setVideoPosition(this.trackingConfig.startPosition)
@@ -632,12 +630,12 @@ class App extends Component {
     moveToNextPlaybackRange = () => {
         this.trackingConfig.startPosition = Math.min(
             this.trackingConfig.startPosition + this.trackingConfig.interval,
-            this.player.getDuration() - this.trackingConfig.interval
+            this.player?.getDuration() - this.trackingConfig.interval
         )
 
         this.trackingConfig.endPosition = Math.min(
             this.trackingConfig.startPosition + this.trackingConfig.interval,
-            this.player.getDuration()
+            this.player?.getDuration()
         )
         this.setVideoPosition(this.trackingConfig.startPosition)
         this.notifyReplayStatus()
@@ -651,7 +649,7 @@ class App extends Component {
 
         this.trackingConfig.endPosition = Math.min(
             this.trackingConfig.startPosition + this.trackingConfig.interval,
-            this.player.getDuration()
+            this.player?.getDuration()
         )
         this.setVideoPosition(this.trackingConfig.startPosition)
         this.notifyReplayStatus()
@@ -699,7 +697,7 @@ class App extends Component {
     watcherForReviewMode = (loopCurrentSplit = false) => {
         this.unsubscribeToReview = setInterval(() => {
             if (
-                this.player.getCurrentTime() <
+                this.player?.getCurrentTime() <
                 this.reviewConfig.reviewRangeStart
             ) {
                 this.setVideoPosition(this.reviewConfig.reviewRangeStart)
@@ -707,7 +705,7 @@ class App extends Component {
 
             if (loopCurrentSplit) {
                 if (
-                    this.player.getCurrentTime() >=
+                    this.player?.getCurrentTime() >=
                     this.reviewConfig.reviewRangeEnd - 5
                 ) {
                     this.setVideoPosition(this.reviewConfig.reviewRangeStart)
@@ -715,7 +713,7 @@ class App extends Component {
                 }
             } else {
                 if (
-                    this.player.getCurrentTime() >=
+                    this.player?.getCurrentTime() >=
                     this.reviewConfig.reviewRangeEnd - 5
                 ) {
                     this.studyStatisticsTracker(0.25)
@@ -795,15 +793,15 @@ class App extends Component {
         //   =================
         //   const standardLength = 10 * 60; //10mins
         //   const minimumLength = 6 * 60; //6mins
-        //   if (this.player.getDuration()< minimumLength) return;
+        //   if (this.player?.getDuration()< minimumLength) return;
         //   =================>
         this.alertConfig.alertConfigOneThirdTime = setInterval(() => {
-            const _25PercentTime = this.player.getDuration() * 0.25 //80%
+            const _25PercentTime = this.player?.getDuration() * 0.25 //80%
 
             if (
-                // this.player.getDuration()> standardLength &&
-                this.player.getCurrentTime() > _25PercentTime &&
-                this.player.getCurrentTime() < _25PercentTime * 2
+                // this.player?.getDuration()> standardLength &&
+                this.player?.getCurrentTime() > _25PercentTime &&
+                this.player?.getCurrentTime() < _25PercentTime * 2
             ) {
                 this.alertConfig.speedMode === 1 && this.setSpeed(3)
                 this.alertConfig.speedMode === 2 && this.setSpeed(3.5)
@@ -820,13 +818,13 @@ class App extends Component {
 
         //   =================>
         this.alertConfig.alertConfigMidwayTime = setInterval(() => {
-            const midwayTime = this.player.getDuration() * 0.5 //60%
+            const midwayTime = this.player?.getDuration() * 0.5 //60%
 
-            if (this.player.getCurrentTime() > midwayTime) {
+            if (this.player?.getCurrentTime() > midwayTime) {
                 this.alertConfig.speedMode === 1 && this.setSpeed(3)
                 this.alertConfig.speedMode === 2 && this.setSpeed(4)
 
-                const remainTime = this.player.getDuration() - midwayTime //40%
+                const remainTime = this.player?.getDuration() - midwayTime //40%
 
                 this.notify({
                     mainMessage: `Alert:Just Past 50%`,
@@ -838,16 +836,16 @@ class App extends Component {
 
         //   =====================>
         this.alertConfig.alertConfigTwoThirdTime = setInterval(() => {
-            const _75PercentTime = this.player.getDuration() * 0.75 //80%
+            const _75PercentTime = this.player?.getDuration() * 0.75 //80%
 
             if (
-                // this.player.getDuration()> standardLength &&
-                this.player.getCurrentTime() > _75PercentTime
+                // this.player?.getDuration()> standardLength &&
+                this.player?.getCurrentTime() > _75PercentTime
             ) {
                 this.alertConfig.speedMode === 1 && this.setSpeed(3.5)
                 this.alertConfig.speedMode === 2 && this.setSpeed(4.5)
 
-                const remainTime = this.player.getDuration() - _75PercentTime //25%
+                const remainTime = this.player?.getDuration() - _75PercentTime //25%
 
                 this.notify({
                     mainMessage: `Alert:Just Past 75%`,
@@ -863,7 +861,7 @@ class App extends Component {
             this.trackingConfig.endPosition / this.trackingConfig.interval
         )
         const totalSplit = parseInt(
-            this.player.getDuration() / this.trackingConfig.interval
+            this.player?.getDuration() / this.trackingConfig.interval
         )
 
         let reviews = JSON.parse(localStorage.getItem('reviews'))
@@ -903,13 +901,12 @@ class App extends Component {
             this.trackingConfig.unsubscribe = null
             this.setupForStandardTrackingMode()
             this.trackingMode(null, false)
-
             return setTimeout(this.notifyReplayStatus, 5000)
         }
 
         this.notify({
             mainMessage: `Title: ${this.state.title}`,
-            colorMessage: `[${toMinutesSeconds(this.player.getDuration())}]`
+            colorMessage: `[${toMinutesSeconds(this.player?.getDuration())}]`
         })
     }
 
@@ -938,20 +935,20 @@ class App extends Component {
     }
 
     seekToTime = value => {
-        let seekToTime = this.player.getCurrentTime() + value
+        let seekToTime = this.player?.getCurrentTime() + value
 
         if (seekToTime < 0) {
             this.setVideoPosition(0)
-        } else if (seekToTime > this.player.getDuration())
-            this.setVideoPosition(this.player.getDuration())
+        } else if (seekToTime > this.player?.getDuration())
+            this.setVideoPosition(this.player?.getDuration())
 
         this.setVideoPosition(seekToTime)
-        this.notify({
-            mainMessage: 'Sample Title: ',
-            colorMessage: `Current Position: <${toMinutesSeconds(
-                this.player.getCurrentTime()
-            )}> of <${toMinutesSeconds(this.player.getDuration())}>`
-        })
+        // this.notify({
+        //     mainMessage: 'Sample Title: ',
+        //     colorMessage: `Current Position: <${toMinutesSeconds(
+        //         this.player?.getCurrentTime()
+        //     )}> of <${toMinutesSeconds(this.player?.getDuration())}>`
+        // })
     }
 
     reduceSpeed = (value = 0.25) => {
@@ -973,13 +970,10 @@ class App extends Component {
     // ==========================================================
     // ==========================================================
 
-    keyboard = {}
-
     rules = [
         {
             condition(meta, code, shift) {
                 return (
-                    code === 'Digit1' ||
                     code === 'Backslash' ||
                     code === 'Quote' ||
                     code === 'Semicolon'
@@ -989,12 +983,11 @@ class App extends Component {
                 if (e.code === 'Semicolon') {
                     this.setupForStandardTrackingMode()
                     this.trackingMode(null, false)
+                } else if (e.code === 'Quote') {
+                    this.trackingMode(parseInt(this.player?.getDuration()))
                 } else if (e.code === 'Backslash') {
-                    this.trackingMode(parseInt(this.player.getDuration()))
-                } else if (e.code === 'Digit1') {
                     this.notifyReplayStatus()
                 }
-
                 return true
             }
         },
@@ -1013,7 +1006,6 @@ class App extends Component {
                 } else {
                     this.moveToNextPlaybackRange()
                 }
-
                 return true
             }
         },
@@ -1021,42 +1013,101 @@ class App extends Component {
         //=================
         {
             condition(meta, code, shift) {
-                return code === 'KeyB'
+                return code === 'KeyN' || code === 'KeyB'
             },
-            action() {
-                this.handlePrevious()
-
+            action(event) {
+                if (event.code === 'KeyN') {
+                    this.handleNext()
+                } else {
+                    this.handlePrevious()
+                }
                 return true
             }
         },
         {
             condition(meta, code, shift) {
-                return code === 'KeyN'
+                return code === 'ArrowRight' || code === 'ArrowLeft'
             },
-            action() {
-                this.handleNext()
+            action(event) {
+                event.preventDefault()
 
+                if (event.code === 'ArrowRight') {
+                    this.seekToTime(20)
+                } else {
+                    this.seekToTime(-20)
+                }
                 return true
             }
         },
         //=================
         {
             condition(meta, code) {
-                return code === 'BracketLeft'
+                return code === 'BracketRight' || code === 'BracketLeft'
             },
-            action() {
-                this.reduceSpeed()
-
+            action(e) {
+                if (e.code === 'BracketRight') {
+                    this.increaseSpeed()
+                } else {
+                    this.reduceSpeed()
+                }
                 return true
             }
         },
         {
             condition(meta, code) {
-                return code === 'BracketRight'
+                return code === 'KeyM'
             },
             action() {
-                this.increaseSpeed()
+                this.handleToggleMuted()
+                return true
+            }
+        },
+        {
+            condition(meta, code, shift) {
+                return code === 'ArrowDown' || code === 'Space'
+            },
+            action(event) {
+                event.preventDefault()
+                this.handlePlayPause()
+                return true
+            }
+        },
+        {
+            condition(meta, code, shift) {
+                return code === 'MetaRight' || code === 'AltRight'
+            },
+            action(event) {
+                event.preventDefault()
+                if (this.trackingConfig.trackingMode === 'active') {
+                    if (event.code === 'AltRight')
+                        this.studyStatisticsTracker(10)
+                    else this.studyStatisticsTracker(-2)
+                    // this.notify.display('Split count : 15')
+                }
+                return true
+            }
+        },
+        {
+            // change volume
+            condition(meta, code) {
+                if (code === 'KeyQ' || code === 'KeyW') {
+                    return true
+                }
+            },
+            action(e) {
+                const volume = Math.min(
+                    1,
+                    Math.max(
+                        0,
+                        Math.round(
+                            this.state.volume * 100 +
+                                (e.code === 'KeyW' ? 5 : -5)
+                        ) / 100
+                    )
+                )
 
+                this.setState({ volume })
+                // notify.display('Volume: ' + (v.volume * 100).toFixed(0) + '%')
                 return true
             }
         }
@@ -1096,7 +1147,6 @@ class App extends Component {
             playbackRate,
             pip
         } = this.state
-
         return (
             <div className="app">
                 <div className="player-wrapper">
