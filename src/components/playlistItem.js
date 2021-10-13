@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
 import "./playlistItem.scss";
+
+import React, { useEffect } from "react";
 
 export default function PlaylistItem({
 	file,
@@ -22,11 +23,9 @@ export default function PlaylistItem({
 	// })
 	useEffect(() => {
 		if (file.id === currentlyPlaying) {
-			setTimeout(function () {
-				let objControl = document.getElementById(file.id);
+			let objControl = document.getElementById(file.id);
 
-				objControl?.scrollIntoView();
-			}, 1000);
+			objControl?.scrollIntoView();
 		}
 	}, [currentlyPlaying, file.id]);
 

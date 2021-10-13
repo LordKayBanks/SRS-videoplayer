@@ -2,12 +2,12 @@ import "./playlist.scss";
 
 import React, { Component } from "react";
 
+import PlaylistItem from "./playlistItem";
 import axios from "axios";
 import { drop } from "../player/drag";
 import { parseYoutubeUrl } from "../utility/youtube";
 import playlistCreator from "../utility/playlistCreator";
 import { uuid } from "uuidv4";
-import PlaylistItem from "./playlistItem";
 
 class Playlist extends Component {
 	state = {
@@ -54,14 +54,30 @@ class Playlist extends Component {
 
 		let div = this.dropRef.current;
 
-		if (!div) return;
-		div.addEventListener("dragstart", this.handleTextDropStart);
-		div.addEventListener("drop", this.handleTextDropEnd);
-		//==
-		div.addEventListener("dragenter", this.handleDragIn);
-		div.addEventListener("dragleave", this.handleDragOut);
-		div.addEventListener("dragover", this.handleDrag);
-		div.addEventListener("drop", this.handleFileDrop);
+		if (div) {
+			div.addEventListener("dragstart", this.handleTextDropStart);
+			div.addEventListener("drop", this.handleTextDropEnd);
+			//==
+			div.addEventListener("dragenter", this.handleDragIn);
+			div.addEventListener("dragleave", this.handleDragOut);
+			div.addEventListener("dragover", this.handleDrag);
+			div.addEventListener("drop", this.handleFileDrop);
+		}
+
+		document.body.addEventListener(
+			"keydown",
+			(e) => {
+				e = e || window.event;
+
+				var key = e.which || e.keyCode; // keyCode detection
+				var ctrl = e.ctrlKey ? e.ctrlKey : key === 17 ? true : false; // ctrl detection
+
+				if (key === 86 && ctrl) {
+					this.handleCopyFromClipBoard();
+				}
+			},
+			false
+		);
 	}
 
 	componentWillUnmount() {
@@ -96,6 +112,46 @@ class Playlist extends Component {
 		const requestUrl = `http://youtube.com/oembed?url=${videoUrl}&format=json`;
 		const result = await axios.get(requestUrl);
 		return result.data;
+	};
+
+	handleCopyFromClipBoard = async () => {
+		const videoURL = await navigator.clipboard.readText();
+
+		let playlistItem = {
+			name: videoURL,
+			path: videoURL,
+			type: "external",
+			id: uuid(),
+		};
+
+		if (parseYoutubeUrl(videoURL)) {
+			const videoInfo = await this.getMetadata(videoURL);
+
+			if (videoInfo) {
+				playlistItem = {
+					name: videoInfo.title,
+					path: videoURL,
+					type: "video/external",
+					id: uuid(),
+					author: videoInfo.author_name,
+					source: videoInfo.provider_name,
+				};
+			}
+		}
+
+		playlistCreator.loadVideo([playlistItem]);
+		this.props.setPlaylist(
+			{
+				playlist: playlistCreator.entries,
+			},
+			false,
+			() => {
+				this.notify({
+					title: "Notification",
+					message: "New Item Added to Playlist",
+				});
+			}
+		);
 	};
 
 	handleTextDropEnd = async (event) => {
