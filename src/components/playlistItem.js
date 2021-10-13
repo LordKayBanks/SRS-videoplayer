@@ -29,8 +29,10 @@ export default function PlaylistItem({
 			}, 1000);
 		}
 	}, [currentlyPlaying, file.id]);
+
+	const CustomTag = `${fileSeparator ? "div" : "li"}`;
 	return (
-		<li
+		<CustomTag
 			ref={ref}
 			//  file={file}
 			key={file.id}
@@ -62,6 +64,6 @@ export default function PlaylistItem({
 			)}
 			<span className="video-title">{`${file.name}` || `${file.src}`}</span>
 			<span className="video-duration">{durationTextContent}</span>
-		</li>
+		</CustomTag>
 	);
 }

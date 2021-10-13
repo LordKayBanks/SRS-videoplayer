@@ -3,6 +3,7 @@ import "./buttons.scss";
 import React from "react";
 
 export default function Buttons({
+	shufflePlaylist,
 	trackingMode,
 	setupTrackingMode,
 	setupReviewMode,
@@ -13,7 +14,6 @@ export default function Buttons({
 	toggleRepeatMode,
 	repeatMode,
 	togglePToolbar = () => {},
-	shufflePlaylist = () => {},
 	changeTrackingMode = () => {},
 	changeSpeed = () => {},
 	changeBoost = () => {},
@@ -46,11 +46,11 @@ export default function Buttons({
 				</svg>
 			</label>
 
-			<label onClick={shufflePlaylist} className="shuffle" title="Shuffle Playlist">
+			{/* <label onClick={shufflePlaylist} className="shuffle" title="Shuffle Playlist">
 				<svg width="16" height="16" viewBox="0 0 16 16">
 					<path d="M6.6,5.2 L1.4,0 L0,1.4 L5.2,6.6 L6.6,5.2 L6.6,5.2 Z M10.5,0 L12.5,2 L0,14.6 L1.4,16 L14,3.5 L16,5.5 L16,0 L10.5,0 L10.5,0 Z M10.8,9.4 L9.4,10.8 L12.5,13.9 L10.5,15.9 L16,15.9 L16,10.4 L14,12.4 L10.8,9.4 L10.8,9.4 Z"></path>
 				</svg>
-			</label>
+			</label> */}
 
 			<label
 				onClick={setupTrackingMode}

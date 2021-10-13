@@ -221,7 +221,7 @@ class Playlist extends Component {
 			});
 		};
 		return (
-			<ul
+			<ol
 				className={`playlist ${this.props.hidePlaylist} ${this.state.dragClassName}`}
 				ref={this.props.sortType === "playlist" ? this.dropRef : null}>
 				{this.state.playlist.map((file, index) => {
@@ -249,7 +249,7 @@ class Playlist extends Component {
 					);
 					// file.e = LI
 				})}
-			</ul>
+			</ol>
 		);
 	}
 }

@@ -25,7 +25,7 @@ class App extends Component {
 		url: null,
 		pip: false,
 		playing: true,
-		controls: false,
+		controls: true,
 		light: false,
 		volume: 1,
 		muted: true,
@@ -113,6 +113,33 @@ class App extends Component {
 
 	handleSetPlaybackRate = (e) => {
 		this.setState({ playbackRate: parseFloat(e.target.value) });
+	};
+
+	shufflePlaylist = () => {
+		if (this.state.sortType === "playlist") {
+			let array = this.state.playlist;
+
+			console.log("🚀 ==> this.state.playlist", this.state.playlist);
+
+			let currentIndex = array.length,
+				randomIndex;
+
+			// While there remain elements to shuffle...
+			while (currentIndex !== 0) {
+				// Pick a remaining element...
+				randomIndex = Math.floor(Math.random() * currentIndex);
+				currentIndex--;
+				// And swap it with the current element.
+				[array[currentIndex], array[randomIndex]] = [
+					array[randomIndex],
+					array[currentIndex],
+				];
+			}
+
+			console.log("🚀 ==> array", array);
+			this.setState({ playlist: array });
+			// return array;
+		}
 	};
 
 	setSpeed = (value) => {
@@ -566,6 +593,7 @@ class App extends Component {
 					/>
 
 					<Toolbar
+						shufflePlaylist={this.shufflePlaylist}
 						sortType={this.state.sortType}
 						setSortType={this.setSortType}
 						reviewMode={this.reviewConfig.reviewMode}
