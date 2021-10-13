@@ -13,12 +13,12 @@ export default function Buttons({
 	speed = 2,
 	toggleRepeatMode,
 	repeatMode,
-	togglePToolbar = () => {},
+	togglePToolbar,
+	previousVideo,
+	nextVideo,
 	changeTrackingMode = () => {},
 	changeSpeed = () => {},
 	changeBoost = () => {},
-	previousVideo = () => {},
-	nextVideo = () => {},
 }) {
 	const changeReviewMode = (e) => {
 		if (reviewMode === "active") {

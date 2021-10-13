@@ -1,23 +1,18 @@
 import "./App.css";
 import "react-notifications-component/dist/theme.css";
 
+import * as statsService from "./components/stats.service";
+
 import React, { Component } from "react";
 import ReactNotification, { store } from "react-notifications-component";
-import {
-	categoryNextPreviousNavigation,
-	// convertToNearest30,
-	// convertToNearestX,
-	// getVideoSplitFactor,
-	// toMinutesSeconds
-} from "./utility/index";
 
 import ReactPlayer from "react-player";
 import Toolbar from "./components/toolbar";
+import { categoryNextPreviousNavigation } from "./utility/index";
+import documentOnKeyDown from "./components/keyboard.events";
 import { findDOMNode } from "react-dom";
 import { hot } from "react-hot-loader";
 import screenfull from "screenfull";
-import documentOnKeyDown from "./components/keyboard.events";
-import * as statsService from "./components/stats.service";
 
 class App extends Component {
 	state = {
@@ -44,6 +39,23 @@ class App extends Component {
 		title: "",
 		videoFormat: "",
 		//==========
+		notificationID: null,
+		reviewConfig: {
+			reviewMode: "inactive",
+			reviewStartRange: 0,
+			reviewEndRange: 0,
+		},
+
+		trackingConfig: {
+			trackingMode: "inactive",
+			startPosition: 0,
+			endPosition: 120,
+			startOffset: 30,
+			interval: 120,
+			defaultStartOffset: 30,
+			defaultEndOffset: 120,
+		},
+		//==========
 	};
 
 	componentDidUpdate() {
@@ -63,7 +75,9 @@ class App extends Component {
 		title = "SR-Videoplayer: Sample Message Title",
 		message = "This is a sample message",
 	}) {
-		store.addNotification({
+		this.state.notificationID && store.removeNotification(this.state.notificationID);
+
+		const notificationID = store.addNotification({
 			title: title,
 			message: message,
 			type: "success",
@@ -72,10 +86,18 @@ class App extends Component {
 			animationIn: ["animate__animated", "animate__fadeIn"],
 			animationOut: ["animate__animated", "animate__fadeOut"],
 			dismiss: {
-				duration: 10000,
+				duration: 15000,
 				onScreen: true,
+				pauseOnHover: true,
+			},
+			slidingExit: {
+				duration: 800,
+				timingFunction: "ease-out",
+				delay: 0,
 			},
 		});
+
+		this.setState({ notificationID });
 	}
 
 	toggleRepeatMode = () => {
@@ -118,7 +140,6 @@ class App extends Component {
 	shufflePlaylist = () => {
 		if (this.state.sortType === "playlist") {
 			let array = this.state.playlist;
-
 			console.log("🚀 ==> this.state.playlist", this.state.playlist);
 
 			let currentIndex = array.length,
@@ -192,13 +213,7 @@ class App extends Component {
 		}
 
 		const newCurrentlyPlaying = newCurrentlyPlayingOBJ["id"];
-
 		this.setCurrentlyPlaying(newCurrentlyPlaying, newCurrentlyPlayingOBJ);
-		// if (this.reviewConfig.reviewMode !== 'inactive') {
-		//     setTimeout(() => {
-		//          this.setupReviewMode({})
-		//     }, 1000)
-		// }
 	};
 
 	handleNext = (_, playableUniqueID) => {
@@ -225,7 +240,7 @@ class App extends Component {
 			currentlyPlayingIndex++;
 		}
 
-		if (currentlyPlayingIndex >= this.state.playlist.length - 1) {
+		if (currentlyPlayingIndex >= this.state.playlist.length) {
 			currentlyPlayingIndex = 0;
 		}
 
@@ -234,20 +249,19 @@ class App extends Component {
 		const playingType = newCurrentlyPlayingOBJ["type"];
 
 		if (playingType === "separator") {
-			const nextPlayableIndex = currentlyPlayingIndex + 1;
+			let nextPlayableIndex = currentlyPlayingIndex + 1;
+
+			if (nextPlayableIndex >= this.state.playlist.length) {
+				nextPlayableIndex = 0;
+			}
+
 			const nextPlayableIndexOBJ = this.state.playlist[nextPlayableIndex];
 			const playableUniqueID = nextPlayableIndexOBJ["id"];
 			return this.handleNext(null, playableUniqueID);
 		}
 
 		const newCurrentlyPlaying = newCurrentlyPlayingOBJ["id"];
-
 		this.setCurrentlyPlaying(newCurrentlyPlaying, newCurrentlyPlayingOBJ);
-		// if (this.reviewConfig.reviewMode !== 'inactive') {
-		//     setTimeout(() => {
-		//          this.setupReviewMode({})
-		//     }, 1000)
-		// }
 	};
 
 	handlePause = () => {
@@ -265,36 +279,42 @@ class App extends Component {
 		console.log("🚀 ~ file: App.js ~ line 169 ~ App ~ error", error);
 	};
 
-	handleEnded = (goToNext = true) => {
+	getFilteredPlaylist(incrementIndex = true) {
 		const currentlyPlayingUniqueID = this.state.currentlyPlaying;
 
-		const { category = false } = this.state.playlist.find(
+		let filteredPlaylist = this.state.playlist.filter((item) => {
+			return this.state.currentCategory.includes(item.category);
+		});
+
+		if (!filteredPlaylist.length) filteredPlaylist = this.state.playlist;
+
+		let currentlyPlayingIndex = filteredPlaylist.findIndex(
 			(item) => item.id === currentlyPlayingUniqueID
 		);
+		return { currentlyPlayingIndex, filteredPlaylist };
+	}
 
-		if (category && this.state.currentCategory.length) {
-			const filteredByCategory = this.state.playlist.filter((item) => {
-				return this.state.currentCategory.includes(item.category);
-			});
-			let currentlyPlayingIndex = filteredByCategory.findIndex(
-				(item) => item.id === currentlyPlayingUniqueID
-			);
+	handleEnded = (incrementIndex = true) => {
+		let { currentlyPlayingIndex, filteredPlaylist } = this.getFilteredPlaylist();
+		currentlyPlayingIndex = categoryNextPreviousNavigation(
+			currentlyPlayingIndex,
+			filteredPlaylist,
+			incrementIndex
+		);
 
-			// currentlyPlayingIndex++
-			// if (currentlyPlayingIndex >= filteredByCategory.length - 1) {
-			//     currentlyPlayingIndex = 0
-			// }
-			currentlyPlayingIndex = categoryNextPreviousNavigation(
-				currentlyPlayingIndex,
-				filteredByCategory,
-				goToNext
-			);
+		let newCurrentlyPlayingOBJ = filteredPlaylist[currentlyPlayingIndex];
+		let newCurrentlyPlaying = newCurrentlyPlayingOBJ["id"];
+		// ============================================
 
-			const newCurrentlyPlayingOBJ = filteredByCategory[currentlyPlayingIndex];
-			const newCurrentlyPlaying = newCurrentlyPlayingOBJ["id"];
+		if (
+			this.state.reviewConfig.reviewMode === "active" ||
+			this.state.currentCategory.length
+		) {
+			console.log("🚀 ==> newCurrentlyPlayingOBJ", newCurrentlyPlayingOBJ);
+			return this.setCurrentlyPlaying(newCurrentlyPlaying, newCurrentlyPlayingOBJ);
+		}
 
-			this.setCurrentlyPlaying(newCurrentlyPlaying, newCurrentlyPlayingOBJ);
-		} else if (this.state.repeatMode === "no-repeat") {
+		if (this.state.repeatMode === "no-repeat") {
 			this.handleNext();
 		} else if (this.state.repeatMode === "repeat-one") {
 			this.setVideoPosition(0);
@@ -314,7 +334,6 @@ class App extends Component {
 			const nextPlayableIndex = chosenItemIndex + 1;
 			const nextPlayableIndexOBJ = this.state.playlist[nextPlayableIndex];
 			const playableUniqueID = nextPlayableIndexOBJ["id"];
-
 			this.setCurrentlyPlayingPublic(playableUniqueID);
 		}
 
@@ -322,11 +341,37 @@ class App extends Component {
 	};
 
 	setCurrentlyPlaying = (uniqueId, currentlyPlayingOBJ, callback = () => {}) => {
-		console.log("🚀 ==> currentlyPlayingOBJ", currentlyPlayingOBJ);
+		if (this.state.reviewConfig.reviewMode === "active") {
+			console.log("🚀 ==> currentlyPlayingOBJ", currentlyPlayingOBJ);
 
-		if (this.reviewConfig.reviewMode !== "inactive") {
-			this.reviewConfig.reviewStartRange = currentlyPlayingOBJ.startTime;
-			this.reviewConfig.reviewEndRange = currentlyPlayingOBJ.endTime;
+			let reviewStartRange = currentlyPlayingOBJ.startTime;
+			let reviewEndRange = currentlyPlayingOBJ.endTime;
+			// return setTimeout(() => {
+			this.setState(
+				{
+					reviewConfig: {
+						...this.state.reviewConfig,
+						reviewStartRange,
+						reviewEndRange,
+					},
+				},
+				() => {
+					this.setState(
+						{
+							url: currentlyPlayingOBJ.path,
+							currentlyPlaying: uniqueId,
+							playing: true,
+							title: currentlyPlayingOBJ.name,
+						},
+						() => {
+							callback();
+						}
+						// console.error('🚀 🚀 🚀 currentlyPlaying: ', this.state)
+					);
+				}
+			);
+			// }, 2000);
+			return;
 		}
 
 		this.setState(
@@ -365,18 +410,17 @@ class App extends Component {
 		);
 	};
 
-	setPlaylist = (items = [], isReview, callback = () => {}) => {
+	setPlaylist = (items = [], replaceOldPlaylist, callback = () => {}) => {
 		if (!items.length) return;
 
 		let currentlyPlaying;
 		let newPlaylist;
 		let nextItemToPlay;
 
-		if (isReview) {
+		if (replaceOldPlaylist) {
 			newPlaylist = [...items];
 
 			let index = 0;
-
 			nextItemToPlay = newPlaylist[index];
 
 			while (nextItemToPlay?.type === "separator") {
@@ -387,12 +431,10 @@ class App extends Component {
 			currentlyPlaying = newPlaylist.find((item) => item.id === nextItemToPlay.id);
 		} else {
 			const currentPlaylist = this.state.playlist;
-
 			newPlaylist = [...currentPlaylist, ...items].filter((item) => !item.isReview);
+
 			// .filter(item => !item.category)
-
 			let index = 0;
-
 			nextItemToPlay = items[index];
 
 			while (nextItemToPlay?.type === "separator") {
@@ -437,7 +479,6 @@ class App extends Component {
 
 	handleToggleControls = () => {
 		const url = this.state.url;
-
 		this.setState(
 			{
 				controls: !this.state.controls,
@@ -596,9 +637,9 @@ class App extends Component {
 						shufflePlaylist={this.shufflePlaylist}
 						sortType={this.state.sortType}
 						setSortType={this.setSortType}
-						reviewMode={this.reviewConfig.reviewMode}
+						reviewMode={this.state.reviewConfig.reviewMode}
 						setupReviewMode={this.setupReviewMode.bind(this)}
-						trackingMode={this.trackingConfig.trackingMode}
+						trackingMode={this.state.trackingConfig.trackingMode}
 						setupTrackingMode={this.setupTrackingMode.bind(this)}
 						setCurrentCategory={this.setCurrentCategory}
 						currentlyPlaying={this.state.currentlyPlaying}
@@ -617,11 +658,8 @@ class App extends Component {
 	}
 }
 App.prototype.alertConfig = statsService.alertConfig;
-App.prototype.trackingConfig = statsService.trackingConfig;
-App.prototype.reviewConfig = statsService.reviewConfig;
 App.prototype.setupTrackingMode = statsService.setupTrackingMode;
-App.prototype.trackingMode = statsService.trackingMode;
-App.prototype.notifyReplayStatus = statsService.notifyReplayStatus;
+App.prototype.watcherForTrackingMode = statsService.watcherForTrackingMode;
 App.prototype.notifyTrackingStatus = statsService.notifyTrackingStatus;
 App.prototype.moveToPreviousPlaybackRange = statsService.moveToPreviousPlaybackRange;
 App.prototype.moveToNextPlaybackRange = statsService.moveToNextPlaybackRange;
@@ -629,6 +667,7 @@ App.prototype.seekToTime = statsService.seekToTime;
 App.prototype.increaseSpeed = statsService.increaseSpeed;
 App.prototype.reduceSpeed = statsService.reduceSpeed;
 App.prototype.studyStatisticsTracker = statsService.studyStatisticsTracker;
+App.prototype.notifyReviewStatus = statsService.notifyReviewStatus;
 App.prototype.setupReviewMode = statsService.setupReviewMode;
 App.prototype.watcherForReviewMode = statsService.watcherForReviewMode;
 App.prototype.alertAtKeyMoments = statsService.alertAtKeyMoments;

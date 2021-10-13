@@ -10,7 +10,7 @@ const rules = [
 			} else if (e.code === "Quote") {
 				this.changeReviewMode();
 			} else if (e.code === "Backslash") {
-				this.notifyReplayStatus();
+				this.notifyReviewStatus();
 			}
 			return true;
 		},

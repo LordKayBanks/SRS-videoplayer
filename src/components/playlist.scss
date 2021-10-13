@@ -26,7 +26,8 @@
 	.video-duration {
 	}
 }
-.playlist li.active, .playlist li:hover {
+.playlist li.active,
+.playlist li:hover {
 	background-color: #5d5858;
 	color: white;
 }
@@ -47,6 +48,15 @@
 	align-items: center;
 	span {
 		pointer-events: none;
+		margin-left: 5px;
+		border-radius: 3px;
+		padding: 2px;
+		// background: rgb(86 75 75 / 40%);
+		background: #2b819c82;
+		//==
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.category {
