@@ -38,7 +38,6 @@ export function studyStatisticsTracker(increment = 1) {
 	const reviewExists = !!reviews;
 	let updatedReview = reviewExists ? reviews : {};
 	let review = updatedReview[this.state.url];
-
 	if (!review) {
 		review = {
 			name: this.state.title,
@@ -76,8 +75,19 @@ export function studyStatisticsTracker(increment = 1) {
 // =============================================================================
 // =============================================================================
 
-export function setupTrackingMode() {
+export function setupTrackingMode({ activate = true }) {
 	const { reviewConfig, trackingConfig, duration } = this.state;
+	if (!activate) {
+		clearInterval(unsubscribeToTracking);
+		unsubscribeToTracking = null;
+		this.setState(
+			{
+				trackingConfig: { ...trackingConfig, trackingMode: "inactive" },
+			},
+			() => this.notifyTrackingStatus()
+		);
+		return;
+	}
 
 	if (reviewConfig.reviewMode !== "inactive") {
 		this.setState({ reviewConfig: { ...reviewConfig, reviewMode: "inactive" } });
@@ -101,80 +111,76 @@ export function setupTrackingMode() {
 
 let speedTracker = 2;
 let unsubscribeToTracking = null;
-
 export function watcherForTrackingMode(offSet, reNormalize = true) {
 	const { trackingConfig, duration } = this.state;
 	clearInterval(alertConfig.alertConfigMidwayTime);
 	clearInterval(alertConfig.alertConfigTwoThirdTime);
 	clearInterval(alertConfig.alertConfigOneThirdTime);
 	//   ========================
-
 	if (trackingConfig.trackingMode === "active") {
 		clearInterval(unsubscribeToTracking);
 		this.setState({
 			trackingConfig: { ...trackingConfig, trackingMode: "inactive" },
 		});
-
 		// this.notify({
 		// 	title: "Tracking mode:",
 		// 	message: "Tracking: Stopped!",
 		// });
-	} else {
-		let startPosition;
-		let endPosition;
-
-		if (reNormalize) {
-			startPosition = Math.max(
-				convertToNearest30(this.player?.getCurrentTime()) - offSet,
-				0
-			);
-			endPosition = Math.min(startPosition + offSet, duration);
-			this.setState({
-				trackingConfig: { ...trackingConfig, startPosition, endPosition },
-			});
-		} else {
-			startPosition = Math.max(trackingConfig.startOffset, 0);
-			endPosition = Math.min(startPosition + trackingConfig.interval, duration);
-			this.setState({
-				trackingConfig: { ...trackingConfig, startPosition, endPosition },
-			});
-		}
-
-		this.setSpeed(2);
-
-		const minDurationForVideoSplitFactor = 5 * 60;
-		duration < minDurationForVideoSplitFactor
-			? this.setVideoPosition(0)
-			: this.setVideoPosition(parseInt(startPosition));
-
-		unsubscribeToTracking = setInterval(() => {
-			const {
-				trackingConfig: { startPosition, endPosition },
-			} = this.state;
-
-			if (
-				this.player?.getCurrentTime() >= endPosition - 5 ||
-				this.player?.getCurrentTime() < startPosition
-			) {
-				this.setVideoPosition(startPosition);
-
-				const speedOptions = [2, 3, 10];
-				speedTracker = (speedTracker + 1) % speedOptions.length;
-				this.setSpeed(speedOptions[speedTracker]);
-				this.studyStatisticsTracker();
-			}
-		}, 1000);
-
-		this.setState(
-			{
-				trackingConfig: { ...trackingConfig, trackingMode: "active" },
-			},
-			() => {
-				this.notifyTrackingStatus();
-				console.log("🚀 ==> watcherForTrackingMode ==> this.state", this.state);
-			}
-		);
+		return;
 	}
+
+	let startPosition;
+	let endPosition;
+	if (reNormalize) {
+		startPosition = Math.max(
+			convertToNearest30(this.player?.getCurrentTime()) - offSet,
+			0
+		);
+		endPosition = Math.min(startPosition + offSet, duration);
+		this.setState({
+			trackingConfig: { ...trackingConfig, startPosition, endPosition },
+		});
+	} else {
+		startPosition = Math.max(trackingConfig.startOffset, 0);
+		endPosition = Math.min(startPosition + trackingConfig.interval, duration);
+		this.setState({
+			trackingConfig: { ...trackingConfig, startPosition, endPosition },
+		});
+	}
+
+	this.setSpeed(2);
+	const minDurationForVideoSplitFactor = 5 * 60;
+
+	duration < minDurationForVideoSplitFactor
+		? this.setVideoPosition(0)
+		: this.setVideoPosition(parseInt(startPosition));
+
+	unsubscribeToTracking = setInterval(() => {
+		const {
+			trackingConfig: { startPosition, endPosition },
+		} = this.state;
+
+		if (
+			this.player?.getCurrentTime() >= endPosition - 5 ||
+			this.player?.getCurrentTime() < startPosition
+		) {
+			this.setVideoPosition(startPosition);
+			const speedOptions = [2, 3, 10];
+			speedTracker = (speedTracker + 1) % speedOptions.length;
+			this.setSpeed(speedOptions[speedTracker]);
+			this.studyStatisticsTracker();
+		}
+	}, 250);
+
+	this.setState(
+		{
+			trackingConfig: { ...trackingConfig, trackingMode: "active" },
+		},
+		() => {
+			this.notifyTrackingStatus();
+			// console.log("🚀 ==> watcherForTrackingMode ==> this.state", this.state);
+		}
+	);
 }
 
 // =============================================================================
@@ -189,6 +195,7 @@ export function moveToNextPlaybackRange() {
 	);
 
 	const endPosition = Math.min(startPosition + trackingConfig.interval, duration);
+
 	this.setState({
 		trackingConfig: { ...trackingConfig, startPosition, endPosition },
 	});
@@ -217,10 +224,8 @@ export function moveToPreviousPlaybackRange() {
 // =============================================================================
 
 let unsubscribeToReview = null;
-
 export function setupReviewMode({ activate = true, loopCurrentSplit = false }) {
 	const { reviewConfig, trackingConfig } = this.state;
-
 	if (!activate) {
 		clearInterval(unsubscribeToReview);
 		unsubscribeToReview = null;
@@ -279,27 +284,28 @@ export function watcherForReviewMode(loopCurrentSplit = false) {
 	//   ========================
 	unsubscribeToReview = setInterval(() => {
 		const { reviewConfig } = this.state;
-
 		if (this.player?.getCurrentTime() < reviewConfig.reviewStartRange) {
 			this.setVideoPosition(reviewConfig.reviewStartRange);
 		}
 
 		if (loopCurrentSplit) {
 			if (this.player?.getCurrentTime() < reviewConfig.reviewEndRange - 5) return;
+
 			this.setVideoPosition(reviewConfig.reviewStartRange);
 			this.studyStatisticsTracker(0.5);
-		} else {
-			if (this.player?.getCurrentTime() < reviewConfig.reviewEndRange - 5) return;
-			this.studyStatisticsTracker(0.25);
-			// Todo ========
-			this.handleNext();
-			this.setVideoPosition(reviewConfig.reviewStartRange);
-			//  ========
-			clearInterval(unsubscribeToReview);
-			this.watcherForReviewMode();
-			this.notifyReviewStatus();
+			return;
 		}
-	}, 1000);
+		if (this.player?.getCurrentTime() < reviewConfig.reviewEndRange - 5) return;
+
+		this.studyStatisticsTracker(0.25);
+		// Todo ========
+		this.handleNext();
+		this.setVideoPosition(reviewConfig.reviewStartRange);
+		//  ========
+		clearInterval(unsubscribeToReview);
+		this.watcherForReviewMode();
+		this.notifyReviewStatus();
+	}, 250);
 }
 // =============================================================================
 // =============================================================================
@@ -318,7 +324,6 @@ export function alertAtKeyMoments() {
 	//   =================>
 	alertConfig.alertConfigOneThirdTime = setInterval(() => {
 		const _25PercentTime = duration * 0.25; //80%
-
 		if (
 			// duration> standardLength &&
 			this.player?.getCurrentTime() > _25PercentTime &&
@@ -326,8 +331,8 @@ export function alertAtKeyMoments() {
 		) {
 			alertConfig.speedMode === 1 && this.setSpeed(3);
 			alertConfig.speedMode === 2 && this.setSpeed(3.5);
-
 			const remainTime = duration - _25PercentTime; //25%
+
 			this.notify({
 				title: `Alert: Just Past 25%`,
 				message: `[${toMinutesSeconds(remainTime, false)}]`,
@@ -339,12 +344,11 @@ export function alertAtKeyMoments() {
 	//   =================>
 	alertConfig.alertConfigMidwayTime = setInterval(() => {
 		const midwayTime = duration * 0.5; //60%
-
 		if (this.player?.getCurrentTime() > midwayTime) {
 			alertConfig.speedMode === 1 && this.setSpeed(3);
 			alertConfig.speedMode === 2 && this.setSpeed(4);
-
 			const remainTime = duration - midwayTime; //40%
+
 			this.notify({
 				title: `Alert:Just Past 50%`,
 				message: `[${toMinutesSeconds(remainTime, false)}]`,
@@ -356,15 +360,14 @@ export function alertAtKeyMoments() {
 	//   =====================>
 	alertConfig.alertConfigTwoThirdTime = setInterval(() => {
 		const _75PercentTime = duration * 0.75; //80%
-
 		if (
 			// duration> standardLength &&
 			this.player?.getCurrentTime() > _75PercentTime
 		) {
 			alertConfig.speedMode === 1 && this.setSpeed(3.5);
 			alertConfig.speedMode === 2 && this.setSpeed(4.5);
-
 			const remainTime = duration - _75PercentTime; //25%
+
 			this.notify({
 				title: `Alert:Just Past 75%`,
 				message: `[${toMinutesSeconds(remainTime, false)}]`,
@@ -395,6 +398,7 @@ export function notifyReviewStatus() {
 		delay: 20000,
 	});
 }
+
 export function notifyTrackingStatus() {
 	const { trackingConfig, duration } = this.state;
 	const currentSplit = parseInt(trackingConfig.endPosition / trackingConfig.interval);
@@ -432,8 +436,8 @@ export function videoOnLoadeddata() {
 	//   setTimeout(this.notifyReviewStatus, 5000);
 
 	if (trackingConfig.trackingConfig === "active") {
-		this.setupTrackingMode();
-		this.setupTrackingMode();
+		this.setupTrackingMode({ activate: true });
+		// this.setupTrackingMode();
 		// this.watcherForTrackingMode(null, false);
 		// return setTimeout(this.notifyTrackingStatus.bind(this), 5000);
 	}
@@ -450,9 +454,9 @@ export function videoOnPause() {
 	//    this.state.trackingMode==='active' && studyStatisticsTracker(0.5);
 	this.studyStatisticsTracker(0.5);
 }
+
 export function videoOnended() {
 	const { trackingConfig } = this.state;
-
 	if (trackingConfig.trackingConfig === "active") {
 		this.setVideoPosition(trackingConfig.startPosition);
 		// this.notifyTrackingStatus();
@@ -472,7 +476,6 @@ export function videoOnended() {
 export function seekToTime(value) {
 	const { duration } = this.state;
 	let seekToTime = this.player?.getCurrentTime() + value;
-
 	if (seekToTime < 0) {
 		this.setVideoPosition(0);
 	} else if (seekToTime > duration) this.setVideoPosition(duration);
@@ -486,23 +489,8 @@ export function seekToTime(value) {
 	// })
 }
 
-export function reduceSpeed(value = 0.25) {
-	const MIN_SPEED = 0.5;
-	let newSpeed = this.state.playbackRate - value;
-	newSpeed = newSpeed < MIN_SPEED ? MIN_SPEED : newSpeed;
-	this.setSpeed(newSpeed);
-}
-
-export function increaseSpeed(value = 0.25) {
-	const MAX_SPEED = 15;
-	let newSpeed = this.state.playbackRate + value;
-	newSpeed = newSpeed > MAX_SPEED ? MAX_SPEED : newSpeed;
-	this.setSpeed(newSpeed);
-}
-
 export function changeReviewMode() {
 	const { reviewConfig } = this.state;
-
 	if (reviewConfig.reviewMode === "active") {
 		this.setupReviewMode({ loopCurrentSplit: true });
 	} else if (reviewConfig.reviewMode === "loop") {

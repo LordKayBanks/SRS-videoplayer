@@ -38,7 +38,6 @@ class Playlist extends Component {
 		}
 
 		const isSameArray = this.isSameArray(prevProps.playlist, this.props.playlist);
-
 		if (!isSameArray) {
 			// this.loadPlaylist()
 			this.setState({ playlist: this.props.playlist });
@@ -53,7 +52,6 @@ class Playlist extends Component {
 		}
 
 		let div = this.dropRef.current;
-
 		if (div) {
 			div.addEventListener("dragstart", this.handleTextDropStart);
 			div.addEventListener("drop", this.handleTextDropEnd);
@@ -68,10 +66,8 @@ class Playlist extends Component {
 			"keydown",
 			(e) => {
 				e = e || window.event;
-
 				var key = e.which || e.keyCode; // keyCode detection
 				var ctrl = e.ctrlKey ? e.ctrlKey : key === 17 ? true : false; // ctrl detection
-
 				if (key === 86 && ctrl) {
 					this.handleCopyFromClipBoard();
 				}
@@ -82,8 +78,8 @@ class Playlist extends Component {
 
 	componentWillUnmount() {
 		let div = this.dropRef.current;
-
 		if (!div) return;
+
 		div.removeEventListener("dragstart", this.handleTextDropStart);
 		div.removeEventListener("drop", this.handleTextDropEnd);
 		//==
@@ -100,9 +96,7 @@ class Playlist extends Component {
 		if (event.dataTransfer) {
 			// Note: textData is empty here for Safari and Google Chrome :(
 			event.dataTransfer.getData("Text");
-
 			let newText = "..."; //Modify the data being dragged BEFORE it is dropped.
-
 			event.dataTransfer.setData("Text", newText);
 		}
 	};
@@ -115,7 +109,7 @@ class Playlist extends Component {
 	};
 
 	handleCopyFromClipBoard = async () => {
-		const videoURL = await navigator.clipboard.readText();
+		const videoURL = await navigator.clipboard?.readText();
 
 		let playlistItem = {
 			name: videoURL,
@@ -126,7 +120,6 @@ class Playlist extends Component {
 
 		if (parseYoutubeUrl(videoURL)) {
 			const videoInfo = await this.getMetadata(videoURL);
-
 			if (videoInfo) {
 				playlistItem = {
 					name: videoInfo.title,
@@ -157,7 +150,6 @@ class Playlist extends Component {
 	handleTextDropEnd = async (event) => {
 		if (event.dataTransfer) {
 			let videoURL = event.dataTransfer.getData("Text");
-
 			if (!videoURL) return;
 
 			let playlistItem = {
@@ -169,7 +161,6 @@ class Playlist extends Component {
 
 			if (parseYoutubeUrl(videoURL)) {
 				const videoInfo = await this.getMetadata(videoURL);
-
 				if (videoInfo) {
 					playlistItem = {
 						name: videoInfo.title,
@@ -221,7 +212,6 @@ class Playlist extends Component {
 		this.dragCounter++;
 		//  if (this.props.sortType !== 'playlist')
 		//    return this.setState({ drag: true, dragClassName: 'wrong-list' })
-
 		if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
 			this.setState({ drag: true, dragClassName: "on-drag" });
 		}
@@ -232,7 +222,6 @@ class Playlist extends Component {
 		e.stopPropagation();
 		this.dragCounter--;
 		this.setState({ dragClassName: "" });
-
 		if (this.dragCounter === 0) {
 			this.setState({ drag: false, dragClassName: "" });
 		}
@@ -242,7 +231,6 @@ class Playlist extends Component {
 		e.preventDefault();
 		e.stopPropagation();
 		this.setState({ drag: false, dragClassName: "" });
-
 		if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
 			// this.props.handleFileDrop(e.dataTransfer.files)
 			drop([...e.dataTransfer.items], playlistCreator.loadVideo);
@@ -271,6 +259,7 @@ class Playlist extends Component {
 
 		const scrollIntoView = (id) => {
 			if (!refs) return;
+
 			refs[id].current?.scrollIntoView({
 				behavior: "smooth",
 				block: "start",
@@ -279,7 +268,8 @@ class Playlist extends Component {
 		return (
 			<ol
 				className={`playlist ${this.props.hidePlaylist} ${this.state.dragClassName}`}
-				ref={this.props.sortType === "playlist" ? this.dropRef : null}>
+				ref={this.props.sortType === "playlist" ? this.dropRef : null}
+			>
 				{this.state.playlist.map((file, index) => {
 					const isSeparator = file.type === "separator";
 					const category = file.type === "separator" ? file.name : null;
@@ -301,7 +291,8 @@ class Playlist extends Component {
 							currentlyPlaying={this.props.currentlyPlaying}
 							setCurrentlyPlaying={this.props.setCurrentlyPlaying}
 							setCurrentCategory={this.props.setCurrentCategory}
-							isDisabled={isDisabled}></PlaylistItem>
+							isDisabled={isDisabled}
+						></PlaylistItem>
 					);
 					// file.e = LI
 				})}

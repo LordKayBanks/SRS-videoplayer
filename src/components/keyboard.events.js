@@ -1,33 +1,38 @@
 const rules = [
 	{
 		condition(meta, code, shift) {
-			return code === "Backslash" || code === "Quote" || code === "Semicolon";
+			return code === "Backslash" || code === "Backspace" || code === "Enter";
 		},
 		action(e) {
-			if (e.code === "Semicolon") {
-				this.setupTrackingMode();
-				// this.trackingMode(null, false);
-			} else if (e.code === "Quote") {
+			if (e.code === "Enter") {
 				this.changeReviewMode();
+			} else if (e.code === "Backspace") {
+				const {
+					trackingConfig: { trackingMode },
+				} = this.state;
+
+				if (trackingMode === "active") this.setupTrackingMode({ activate: false });
+				else this.setupTrackingMode({ activate: true });
+				// this.trackingMode(null, false);
 			} else if (e.code === "Backslash") {
 				this.notifyReviewStatus();
 			}
 			return true;
 		},
 	},
-	{
-		condition(meta, code, shift) {
-			return code === "KeyA" || code === "KeyS" || code === "Comma" || code === "Period";
-		},
-		action(e) {
-			if (e.code === "KeyA" || e.code === "Comma") {
-				this.moveToPreviousPlaybackRange();
-			} else {
-				this.moveToNextPlaybackRange();
-			}
-			return true;
-		},
-	},
+	// {
+	// 	condition(meta, code, shift) {
+	// 		return code === "KeyA" || code === "KeyS" || code === "Comma" || code === "Period";
+	// 	},
+	// 	action(e) {
+	// 		if (e.code === "KeyA" || e.code === "Comma") {
+	// 			this.moveToPreviousPlaybackRange();
+	// 		} else {
+	// 			this.moveToNextPlaybackRange();
+	// 		}
+	// 		return true;
+	// 	},
+	// },
 
 	//=================
 	{
@@ -45,15 +50,14 @@ const rules = [
 	},
 	{
 		condition(meta, code, shift) {
-			return code === "ArrowRight" || code === "ArrowLeft";
+			return code === "Comma" || code === "Period";
 		},
 		action(event) {
 			event.preventDefault();
-
-			if (event.code === "ArrowRight") {
-				this.seekToTime(20);
+			if (event.code === "Period") {
+				this.seekToTime(10);
 			} else {
-				this.seekToTime(-20);
+				this.seekToTime(-10);
 			}
 			return true;
 		},
@@ -83,7 +87,7 @@ const rules = [
 	},
 	{
 		condition(meta, code, shift) {
-			return code === "ArrowDown" || code === "Space";
+			return code === "Space";
 		},
 		action(event) {
 			event.preventDefault();
@@ -93,9 +97,29 @@ const rules = [
 	},
 	{
 		condition(meta, code, shift) {
-			return code === "MetaRight" || code === "AltRight";
+			return code === "ShiftRight" || code === "Slash";
 		},
 		action(event) {
+			event.preventDefault();
+			if (event.code === "ShiftRight") {
+				this.notify({
+					title: "SR-Videoplayer:",
+					message: "Bookmark Created",
+				});
+			} else {
+				this.notify({
+					title: "SR-Videoplayer:",
+					message: "Bookmark Removed",
+				});
+			}
+			return true;
+		},
+	},
+	{
+		condition(meta, code, shift) {
+			return code === "MetaRight" || code === "AltRight";
+		},
+		action({ event }) {
 			event.preventDefault();
 			if (this.trackingConfig.trackingMode === "active") {
 				if (event.code === "AltRight") this.studyStatisticsTracker(10);
@@ -131,7 +155,6 @@ const rules = [
 export default function documentOnKeyDown(_this) {
 	return (e) => {
 		const meta = e.metaKey || e.ctrlKey;
-
 		for (let { condition, action } of rules) {
 			condition = condition.bind(_this);
 			action = action.bind(_this);

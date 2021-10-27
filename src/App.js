@@ -1,4 +1,4 @@
-import "./App.css";
+import "./App.scss";
 import "react-notifications-component/dist/theme.css";
 
 import * as statsService from "./components/stats.service";
@@ -6,6 +6,7 @@ import * as statsService from "./components/stats.service";
 import React, { Component } from "react";
 import ReactNotification, { store } from "react-notifications-component";
 
+import PlaybackControl from "./components/playbackControl";
 import ReactPlayer from "react-player";
 import Toolbar from "./components/toolbar";
 import { categoryNextPreviousNavigation } from "./utility/index";
@@ -20,17 +21,18 @@ class App extends Component {
 		url: null,
 		pip: false,
 		playing: true,
-		controls: true,
+		controls: false,
 		light: false,
-		volume: 1,
+		volume: 0.8,
 		muted: true,
 		played: 0,
 		loaded: 0,
 		duration: 0,
 		currentTime: 0,
-		playbackRate: 5,
+		playbackRate: 2,
 		loop: false,
 		//  ======================
+		currentPosition: 0,
 		playlist: [],
 		sortType: "playlist",
 		repeatMode: "repeat-all",
@@ -56,6 +58,44 @@ class App extends Component {
 			defaultEndOffset: 120,
 		},
 		//==========
+	};
+
+	handleReviewMode = (values = []) => {
+		console.log("🚀 ==> values", values);
+		if (this.state.trackingConfig.trackingMode === "active") {
+			this.setState(
+				{
+					trackingConfig: {
+						...this.state.trackingConfig,
+						startPosition: values[0],
+						endPosition: values[1],
+					},
+				},
+				() => {
+					// this.setupTrackingMode({ activate: true });
+				}
+			);
+			return;
+		}
+
+		if (this.state.reviewConfig.reviewMode !== "inactive") {
+			this.setState(
+				{
+					reviewConfig: {
+						...this.state.reviewConfig,
+						reviewStartRange: values[0],
+						reviewEndRange: values[1],
+					},
+				},
+				() => {
+					this.setupReviewMode({
+						activate: true,
+						loopCurrentSplit: this.state.reviewConfig.reviewMode === "loop",
+					});
+				}
+			);
+		}
+		return;
 	};
 
 	componentDidUpdate() {
@@ -104,20 +144,22 @@ class App extends Component {
 		const NO_REPEAT_MODE = "no-repeat";
 		const REPEAT_ONE_MODE = "repeat-one";
 		const REPEAT_ALL_MODE = "repeat-all";
-
 		switch (this.state.repeatMode) {
 			case NO_REPEAT_MODE: {
 				this.setState({ repeatMode: REPEAT_ONE_MODE });
 				break;
 			}
+
 			case REPEAT_ONE_MODE: {
 				this.setState({ repeatMode: REPEAT_ALL_MODE });
 				break;
 			}
+
 			case REPEAT_ALL_MODE: {
 				this.setState({ repeatMode: NO_REPEAT_MODE });
 				break;
 			}
+
 			default: {
 				this.setState({ repeatMode: REPEAT_ONE_MODE });
 				break;
@@ -131,10 +173,6 @@ class App extends Component {
 
 	handleStop = () => {
 		this.setState({ url: null, playing: false });
-	};
-
-	handleSetPlaybackRate = (e) => {
-		this.setState({ playbackRate: parseFloat(e.target.value) });
 	};
 
 	shufflePlaylist = () => {
@@ -163,8 +201,36 @@ class App extends Component {
 		}
 	};
 
+	handlePlaybackRate = (increase = true) => {
+		let playbackRate = this.state.playbackRate;
+		if (increase) {
+			playbackRate += 0.5;
+			playbackRate = Math.min(15, playbackRate);
+		} else {
+			playbackRate -= 0.5;
+			playbackRate = Math.max(0.5, playbackRate);
+		}
+
+		this.player.playbackRate = parseFloat(playbackRate);
+		this.setState({ playbackRate: parseFloat(playbackRate) });
+	};
+
 	setSpeed = (value) => {
 		this.setState({ playbackRate: parseFloat(value) });
+	};
+
+	reduceSpeed = (value = 0.25) => {
+		const MIN_SPEED = 0.5;
+		let newSpeed = this.state.playbackRate - value;
+		newSpeed = newSpeed < MIN_SPEED ? MIN_SPEED : newSpeed;
+		this.setSpeed(newSpeed);
+	};
+
+	increaseSpeed = (value = 0.25) => {
+		const MAX_SPEED = 15;
+		let newSpeed = this.state.playbackRate + value;
+		newSpeed = newSpeed > MAX_SPEED ? MAX_SPEED : newSpeed;
+		this.setSpeed(newSpeed);
 	};
 
 	setVideoPosition = (value) => {
@@ -183,7 +249,6 @@ class App extends Component {
 		let currentlyPlaying;
 		let currentlyPlayingIndex;
 		let newCurrentlyPlayingOBJ;
-
 		if (playableUniqueID) {
 			currentlyPlaying = playableUniqueID;
 			currentlyPlayingIndex = this.state.playlist.findIndex(
@@ -202,9 +267,7 @@ class App extends Component {
 		}
 
 		newCurrentlyPlayingOBJ = this.state.playlist[currentlyPlayingIndex];
-
 		const playingType = newCurrentlyPlayingOBJ["type"];
-
 		if (playingType === "separator") {
 			const nextPlayableIndex = currentlyPlayingIndex - 1;
 			const nextPlayableIndexOBJ = this.state.playlist[nextPlayableIndex];
@@ -226,7 +289,6 @@ class App extends Component {
 		let currentlyPlaying;
 		let currentlyPlayingIndex;
 		let newCurrentlyPlayingOBJ;
-
 		if (playableUniqueID) {
 			currentlyPlaying = playableUniqueID;
 			currentlyPlayingIndex = this.state.playlist.findIndex(
@@ -245,12 +307,9 @@ class App extends Component {
 		}
 
 		newCurrentlyPlayingOBJ = this.state.playlist[currentlyPlayingIndex];
-
 		const playingType = newCurrentlyPlayingOBJ["type"];
-
 		if (playingType === "separator") {
 			let nextPlayableIndex = currentlyPlayingIndex + 1;
-
 			if (nextPlayableIndex >= this.state.playlist.length) {
 				nextPlayableIndex = 0;
 			}
@@ -266,12 +325,16 @@ class App extends Component {
 
 	handlePause = () => {
 		//  console.log('onPause')
+		// clearInterval(this.unSubscribeCurrentPosition);
 		this.setState({ playing: false });
 	};
 
 	handlePlay = () => {
-		this.setState({ playing: true });
+		this.setState({ playing: true, duration: this.player?.getDuration() });
 		console.log("onPlay");
+		// this.unSubscribeCurrentPosition = setInterval(() => {
+		// 	this.setState({ currentPosition: this.player?.getCurrentTime() });
+		// }, 1000);
 	};
 
 	handleError = (error) => {
@@ -296,16 +359,15 @@ class App extends Component {
 
 	handleEnded = (incrementIndex = true) => {
 		let { currentlyPlayingIndex, filteredPlaylist } = this.getFilteredPlaylist();
+
 		currentlyPlayingIndex = categoryNextPreviousNavigation(
 			currentlyPlayingIndex,
 			filteredPlaylist,
 			incrementIndex
 		);
-
 		let newCurrentlyPlayingOBJ = filteredPlaylist[currentlyPlayingIndex];
 		let newCurrentlyPlaying = newCurrentlyPlayingOBJ["id"];
 		// ============================================
-
 		if (
 			this.state.reviewConfig.reviewMode === "active" ||
 			this.state.currentCategory.length
@@ -329,7 +391,6 @@ class App extends Component {
 		const chosenItemIndex = this.state.playlist.findIndex((item) => item.id === uniqueId);
 		const chosenItemItemOBJ = this.state.playlist[chosenItemIndex];
 		const playingType = chosenItemItemOBJ["type"];
-
 		if (playingType === "separator") {
 			const nextPlayableIndex = chosenItemIndex + 1;
 			const nextPlayableIndexOBJ = this.state.playlist[nextPlayableIndex];
@@ -343,9 +404,9 @@ class App extends Component {
 	setCurrentlyPlaying = (uniqueId, currentlyPlayingOBJ, callback = () => {}) => {
 		if (this.state.reviewConfig.reviewMode === "active") {
 			console.log("🚀 ==> currentlyPlayingOBJ", currentlyPlayingOBJ);
-
 			let reviewStartRange = currentlyPlayingOBJ.startTime;
 			let reviewEndRange = currentlyPlayingOBJ.endTime;
+
 			// return setTimeout(() => {
 			this.setState(
 				{
@@ -390,7 +451,6 @@ class App extends Component {
 
 	setCurrentCategory = (category, addCategory) => {
 		let newCategories;
-
 		if (addCategory) {
 			newCategories = [...this.state.currentCategory, category];
 			newCategories = [...new Set(newCategories)];
@@ -416,13 +476,10 @@ class App extends Component {
 		let currentlyPlaying;
 		let newPlaylist;
 		let nextItemToPlay;
-
 		if (replaceOldPlaylist) {
 			newPlaylist = [...items];
-
 			let index = 0;
 			nextItemToPlay = newPlaylist[index];
-
 			while (nextItemToPlay?.type === "separator") {
 				nextItemToPlay = newPlaylist[index];
 				index = index + 1;
@@ -432,11 +489,9 @@ class App extends Component {
 		} else {
 			const currentPlaylist = this.state.playlist;
 			newPlaylist = [...currentPlaylist, ...items].filter((item) => !item.isReview);
-
 			// .filter(item => !item.category)
 			let index = 0;
 			nextItemToPlay = items[index];
-
 			while (nextItemToPlay?.type === "separator") {
 				nextItemToPlay = items[index];
 				index = index + 1;
@@ -473,12 +528,13 @@ class App extends Component {
 	};
 
 	handleDuration = (duration) => {
-		//  console.log('onDuration', duration)
+		console.log("onDuration", duration);
 		this.setState({ duration });
 	};
 
 	handleToggleControls = () => {
 		const url = this.state.url;
+
 		this.setState(
 			{
 				controls: !this.state.controls,
@@ -532,8 +588,9 @@ class App extends Component {
 	};
 
 	handleProgress = (state) => {
-		//  console.log('onProgress', state)
-
+		this.setState({ currentPosition: state.playedSeconds });
+		// console.log("onProgress", state);
+		//=====
 		// We only want to update time slider if we are not currently seeking
 		if (!this.state.seeking) {
 			this.setState(state);
@@ -587,60 +644,85 @@ class App extends Component {
 		return (
 			<div className="app">
 				<div className="player-wrapper">
-					<ReactPlayer
-						ref={this.ref}
-						className="react-player"
-						width="auto"
-						height="100vh"
-						url={url}
-						pip={pip}
-						playing={playing}
-						played={played}
-						controls={controls}
-						light={light}
-						loop={loop}
-						playbackRate={playbackRate}
-						volume={volume}
-						muted={muted}
-						onReady={() => {
-							console.log("onReady");
-							//  this.videoOnLoadeddata()
-						}}
-						onStart={() => {
-							console.log("onStart");
-							this.videoOnLoadeddata();
-						}}
-						onPlay={this.handlePlay}
-						onPause={this.handlePause}
-						onSeek={(e) => console.log("onSeek", e)}
-						onEnded={this.handleEnded}
-						onError={this.handleError}
-						onBuffer={() => console.log("onBuffer")}
-						onEnablePIP={this.handleEnablePIP}
-						onDisablePIP={this.handleDisablePIP}
-						onProgress={this.handleProgress}
-						onDuration={this.handleDuration}
-						config={{
-							youtube: {
-								playerVars: {
-									showinfo: 1,
-									// disablekb: 1,
-									iv_load_policy: 3,
-									modestbranding: 1,
-									rel: 0,
+					<div>
+						<ReactPlayer
+							ref={this.ref}
+							className="react-player"
+							width="auto"
+							height="100vh"
+							url={url}
+							pip={pip}
+							playing={playing}
+							played={played}
+							controls={controls}
+							light={light}
+							loop={loop}
+							playbackRate={playbackRate}
+							volume={volume}
+							muted={muted}
+							onReady={() => {
+								console.log("onReady");
+								//  this.videoOnLoadeddata()
+							}}
+							onStart={() => {
+								console.log("onStart");
+								this.videoOnLoadeddata();
+							}}
+							onPlay={this.handlePlay}
+							onPause={this.handlePause}
+							onSeek={(e) => console.log("onSeek", e)}
+							onEnded={this.handleEnded}
+							onError={this.handleError}
+							onBuffer={() => console.log("onBuffer")}
+							onEnablePIP={this.handleEnablePIP}
+							onDisablePIP={this.handleDisablePIP}
+							onProgress={this.handleProgress}
+							onDuration={this.handleDuration}
+							config={{
+								youtube: {
+									playerVars: {
+										showinfo: 1,
+										// disablekb: 1,
+										iv_load_policy: 3,
+										modestbranding: 1,
+										rel: 0,
+									},
 								},
-							},
-						}}
-					/>
-
+							}}
+						/>
+						<PlaybackControl
+							playing={playing}
+							handlePlayPause={this.handlePlayPause}
+							muted={muted}
+							handleToggleMuted={this.handleToggleMuted}
+							volume={volume}
+							handleVolumeChange={this.handleVolumeChange}
+							currentTime={this.state.currentPosition}
+							totalDuration={this.state.duration}
+							handleReviewMode={this.handleReviewMode}
+							playbackRate={playbackRate}
+							handlePlaybackRate={{
+								increaseSpeed: this.increaseSpeed,
+								reduceSpeed: this.reduceSpeed,
+							}}
+							reviewRange={{
+								reviewStartRange: this.state.reviewConfig.reviewStartRange,
+								reviewEndRange: this.state.reviewConfig.reviewEndRange,
+							}}
+							handlePrevious={this.handlePrevious}
+							handleNext={this.handleNext}
+						></PlaybackControl>
+					</div>
 					<Toolbar
-						shufflePlaylist={this.shufflePlaylist}
-						sortType={this.state.sortType}
-						setSortType={this.setSortType}
 						reviewMode={this.state.reviewConfig.reviewMode}
 						setupReviewMode={this.setupReviewMode.bind(this)}
 						trackingMode={this.state.trackingConfig.trackingMode}
 						setupTrackingMode={this.setupTrackingMode.bind(this)}
+						//==
+						shufflePlaylist={this.shufflePlaylist}
+						sortType={this.state.sortType}
+						setSortType={this.setSortType}
+						//=
 						setCurrentCategory={this.setCurrentCategory}
 						currentlyPlaying={this.state.currentlyPlaying}
 						setCurrentlyPlaying={this.setCurrentlyPlayingPublic}
@@ -649,8 +731,11 @@ class App extends Component {
 						handlePrevious={this.handlePrevious}
 						handleNext={this.handleNext}
 						notify={this.notify}
+						//==
 						toggleRepeatMode={this.toggleRepeatMode}
-						repeatMode={this.state.repeatMode}></Toolbar>
+						repeatMode={this.state.repeatMode}
+					></Toolbar>
+
 					<ReactNotification></ReactNotification>
 				</div>
 			</div>
@@ -664,8 +749,6 @@ App.prototype.notifyTrackingStatus = statsService.notifyTrackingStatus;
 App.prototype.moveToPreviousPlaybackRange = statsService.moveToPreviousPlaybackRange;
 App.prototype.moveToNextPlaybackRange = statsService.moveToNextPlaybackRange;
 App.prototype.seekToTime = statsService.seekToTime;
-App.prototype.increaseSpeed = statsService.increaseSpeed;
-App.prototype.reduceSpeed = statsService.reduceSpeed;
 App.prototype.studyStatisticsTracker = statsService.studyStatisticsTracker;
 App.prototype.notifyReviewStatus = statsService.notifyReviewStatus;
 App.prototype.setupReviewMode = statsService.setupReviewMode;

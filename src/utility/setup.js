@@ -22,12 +22,10 @@ const alertConfig = {
 
 export function studyStatisticsTracker(increment = 1) {
 	const currentSplit = parseInt(replayConfig.endPosition / replayConfig.interval);
-
 	let reviews = JSON.parse(localStorage.getItem("reviews"));
 	const reviewExists = !!reviews;
 	let updatedReview = reviewExists ? reviews : {};
 	let review = updatedReview[getVideoPath()];
-
 	if (!review) {
 		review = {
 			name: getVideoTitle(),
@@ -74,13 +72,11 @@ export function setupForStandardTrackingMode(reviewModeSate) {
 }
 
 let speedTracker = 2;
-
 export function trackingMode(offSet, renormalize = true) {
 	clearInterval(alertConfig.alertConfigMidwayTime);
 	clearInterval(alertConfig.alertConfigTwoThirdTime);
 	clearInterval(alertConfig.alertConfigOneThirdTime);
 	//   ========================
-
 	if (replayConfig.unsubscribe) {
 		clearInterval(replayConfig.unsubscribe);
 		replayConfig.unsubscribe = null;
@@ -105,8 +101,8 @@ export function trackingMode(offSet, renormalize = true) {
 		}
 
 		this.setSpeed(2);
-
 		const minDurationForVideoSplitFactor = 5 * 60;
+
 		getVideoTotalDuration() < minDurationForVideoSplitFactor
 			? setVideoPosition(0)
 			: setVideoPosition(parseInt(replayConfig.startPosition));
@@ -117,7 +113,6 @@ export function trackingMode(offSet, renormalize = true) {
 				getVideoCurrentTime() < replayConfig.startPosition
 			) {
 				setVideoPosition(replayConfig.startPosition);
-
 				const speedTOptions = [2, 3, 10];
 				speedTracker = (speedTracker + 1) % speedTOptions.length;
 				this.setSpeed(speedTOptions[speedTracker]);
@@ -155,7 +150,6 @@ export function alertAtKeyMoments() {
 	//   =================>
 	alertConfig.alertConfigOneThirdTime = setInterval(() => {
 		const _25PercentTime = getVideoTotalDuration() * 0.25; //80%
-
 		if (
 			// getVideoTotalDuration() > standardLength &&
 			getVideoCurrentTime() > _25PercentTime &&
@@ -163,8 +157,8 @@ export function alertAtKeyMoments() {
 		) {
 			alertConfig.speedMode === 1 && setSpeed(3);
 			alertConfig.speedMode === 2 && setSpeed(3.5);
-
 			const remainTime = getVideoTotalDuration() - _25PercentTime; //25%
+
 			notify.display(
 				`Alert:\r\nJust Past 25%`,
 				`\r\n[${toMinutesSeconds(remainTime, false)}]`
@@ -177,12 +171,11 @@ export function alertAtKeyMoments() {
 
 	alertConfig.alertConfigMidwayTime = setInterval(() => {
 		const midwayTime = getVideoTotalDuration() * 0.5; //60%
-
 		if (getVideoCurrentTime() > midwayTime) {
 			alertConfig.speedMode === 1 && setSpeed(3);
 			alertConfig.speedMode === 2 && setSpeed(4);
-
 			const remainTime = getVideoTotalDuration() - midwayTime; //40%
+
 			notify.display(
 				`Alert:\r\nJust Past 50%`,
 				`\r\n[${toMinutesSeconds(remainTime, false)}]`
@@ -194,15 +187,14 @@ export function alertAtKeyMoments() {
 	//   =====================>
 	alertConfig.alertConfigTwoThirdTime = setInterval(() => {
 		const _75PercentTime = getVideoTotalDuration() * 0.75; //80%
-
 		if (
 			// getVideoTotalDuration() > standardLength &&
 			getVideoCurrentTime() > _75PercentTime
 		) {
 			alertConfig.speedMode === 1 && setSpeed(3.5);
 			alertConfig.speedMode === 2 && setSpeed(4.5);
-
 			const remainTime = getVideoTotalDuration() - _75PercentTime; //25%
+
 			notify.display(
 				`Alert:\r\nJust Past 75%`,
 				`\r\n[${toMinutesSeconds(remainTime, false)}]`
@@ -250,12 +242,10 @@ export function moveToPreviousPlaybackRange() {
 }
 
 const multipleKeysMap = {};
-
 export function handleMultipleKeyPress(evt) {
 	let { keyCode, type } = evt || Event; // to deal with IE
 	let isKeyDown = type === "keydown";
 	multipleKeysMap[keyCode] = isKeyDown;
-
 	if (isKeyDown && multipleKeysMap[8] && multipleKeysMap[189]) {
 		//   backspace & Minus
 		moveToPreviousPlaybackRange();
@@ -267,7 +257,6 @@ export function handleMultipleKeyPress(evt) {
 
 let isReviewing = false;
 let unsubscribeToReview = null;
-
 export function setupReviewMode({
 	activate = true,
 	loopCurrentSplit = false,
@@ -275,7 +264,6 @@ export function setupReviewMode({
 	videoInfo,
 }) {
 	const deactivate = !activate;
-
 	if (deactivate) {
 		clearInterval(unsubscribeToReview);
 		return notify.display("Review: Stopped!");
@@ -287,6 +275,7 @@ export function setupReviewMode({
 	}
 
 	if (videoInfo.origin.startTime) videoInfo.currentTime = videoInfo.origin.startTime;
+
 	clearInterval(unsubscribeToReview);
 	loopCurrentSplit && notify.display(`Reviews: Looping`);
 	watcherForReviewMode(loopCurrentSplit);
@@ -362,7 +351,6 @@ export const videoOnended = () => {
 
 function getVideoSplitFactor() {
 	let videoSplit;
-
 	if (getVideoTotalDuration() >= 30 * 60) videoSplit = 8;
 	else if (getVideoTotalDuration() >= 20 * 60) videoSplit = 6;
 	else if (getVideoTotalDuration() >= 10 * 60) videoSplit = 4;
@@ -373,10 +361,8 @@ function getVideoSplitFactor() {
 
 const convertToNearest30 = (num) => Math.round(num / 30) * 30;
 const convertToNearestX = (num, X) => Math.floor(num / X) * X;
-
 export const seekToTime = function (value) {
 	let seekToTime = getVideoCurrentTime() + value;
-
 	if (seekToTime < 0) {
 		setVideoPosition(0);
 	} else if (seekToTime > getVideoTotalDuration()) setVideoPosition(getVideoTotalDuration());
@@ -407,7 +393,6 @@ export function increaseSpeed(value = 0.25) {
 
 function notifyReviewStatus() {
 	const currentSplit = parseInt(replayConfig.endPosition / replayConfig.interval);
-
 	const totalSplit = parseInt(getVideoTotalDuration() / replayConfig.interval);
 	let reviews = JSON.parse(localStorage.getItem("reviews"));
 
