@@ -1,27 +1,5 @@
-import {
-	convertToNearest30,
-	convertToNearestX,
-	getVideoSplitFactor,
-	toMinutesSeconds,
-} from "../utility/index";
+import { convertToNearestX, getVideoSplitFactor, toMinutesSeconds } from "../utility/index";
 
-// export const reviewConfig = {
-// 	reviewMode: "inactive",
-// 	reviewStartRange: 0,
-// 	reviewEndRange: 0,
-// };
-
-// export const trackingConfig = {
-// 	trackingMode: "inactive",
-// 	startPosition: 0,
-// 	endPosition: 120,
-// 	unsubscribe: null,
-// 	defaultStartOffset: 30,
-// 	defaultEndOffset: 120,
-// 	startOffset: 30,
-// 	interval: 120,
-// 	cachedPlaybackRate: 2.0,
-// };
 export const alertConfig = {
 	alertConfigMidwayTime: null,
 	alertConfigOneThirdTime: null,
@@ -31,9 +9,23 @@ export const alertConfig = {
 	delta: 500,
 };
 
+export function getSplit() {
+	const { trackingConfig, duration } = this.state;
+	let STEP = parseInt(duration / 10);
+	let currentSplitStart = convertToNearestX(trackingConfig.startPosition, STEP);
+	let currentSplitEnd = convertToNearestX(trackingConfig.endPosition, STEP);
+	let normalizedDuration = convertToNearestX(duration, STEP);
+	currentSplitStart = parseInt((currentSplitStart / normalizedDuration) * 10);
+	currentSplitEnd = parseInt((currentSplitEnd / normalizedDuration) * 10);
+	return `${currentSplitStart}:${currentSplitEnd}`;
+}
+
 export function studyStatisticsTracker(increment = 1) {
 	const { trackingConfig } = this.state;
-	const currentSplit = parseInt(trackingConfig.endPosition / trackingConfig.interval);
+	// const currentSplit = parseInt(trackingConfig.endPosition / trackingConfig.interval);
+	const currentSplit = this.getSplit();
+	console.error("🚀 ==> currentSplit", currentSplit);
+	//===============
 	let reviews = JSON.parse(localStorage.getItem("reviews"));
 	const reviewExists = !!reviews;
 	let updatedReview = reviewExists ? reviews : {};
@@ -97,21 +89,18 @@ export function setupTrackingMode({ activate = true }) {
 	//====================
 
 	let videoSplit = getVideoSplitFactor(duration);
-	const interval = parseInt(duration / videoSplit);
-
-	const startOffset = convertToNearestX(
-		this.player?.getCurrentTime(),
-		trackingConfig.interval
-	);
-
+	let STEP = parseInt(duration / 10);
+	let interval = parseInt(duration / videoSplit);
+	interval = convertToNearestX(interval, STEP);
+	const startOffset = convertToNearestX(this.player?.getCurrentTime(), interval);
 	this.setState({ trackingConfig: { ...trackingConfig, interval, startOffset } });
 	//====================
-	this.watcherForTrackingMode(null, false);
+	this.watcherForTrackingMode(null);
 }
 
 let speedTracker = 2;
 let unsubscribeToTracking = null;
-export function watcherForTrackingMode(offSet, reNormalize = true) {
+export function watcherForTrackingMode(offSet) {
 	const { trackingConfig, duration } = this.state;
 	clearInterval(alertConfig.alertConfigMidwayTime);
 	clearInterval(alertConfig.alertConfigTwoThirdTime);
@@ -131,23 +120,11 @@ export function watcherForTrackingMode(offSet, reNormalize = true) {
 
 	let startPosition;
 	let endPosition;
-	if (reNormalize) {
-		startPosition = Math.max(
-			convertToNearest30(this.player?.getCurrentTime()) - offSet,
-			0
-		);
-		endPosition = Math.min(startPosition + offSet, duration);
-		this.setState({
-			trackingConfig: { ...trackingConfig, startPosition, endPosition },
-		});
-	} else {
-		startPosition = Math.max(trackingConfig.startOffset, 0);
-		endPosition = Math.min(startPosition + trackingConfig.interval, duration);
-		this.setState({
-			trackingConfig: { ...trackingConfig, startPosition, endPosition },
-		});
-	}
-
+	startPosition = Math.max(trackingConfig.startOffset, 0);
+	endPosition = Math.min(startPosition + trackingConfig.interval, duration);
+	this.setState({
+		trackingConfig: { ...trackingConfig, startPosition, endPosition },
+	});
 	this.setSpeed(2);
 	const minDurationForVideoSplitFactor = 5 * 60;
 
@@ -186,6 +163,16 @@ export function watcherForTrackingMode(offSet, reNormalize = true) {
 // =============================================================================
 // =============================================================================
 
+export function handleTrackingRange([startPosition, endPosition]) {
+	const { trackingConfig } = this.state;
+
+	this.setState({
+		trackingConfig: { ...trackingConfig, startPosition, endPosition },
+	});
+	this.setVideoPosition(startPosition);
+	this.notifyTrackingStatus();
+}
+
 export function moveToNextPlaybackRange() {
 	const { trackingConfig, duration } = this.state;
 
@@ -199,7 +186,6 @@ export function moveToNextPlaybackRange() {
 	this.setState({
 		trackingConfig: { ...trackingConfig, startPosition, endPosition },
 	});
-	// this.setVideoPosition(trackingConfig.startPosition);
 	this.setVideoPosition(startPosition);
 	this.notifyTrackingStatus();
 }
@@ -216,7 +202,6 @@ export function moveToPreviousPlaybackRange() {
 	this.setState({
 		trackingConfig: { ...trackingConfig, startPosition, endPosition },
 	});
-	// this.setVideoPosition(trackingConfig.startPosition);
 	this.setVideoPosition(startPosition);
 	this.notifyTrackingStatus();
 }
@@ -241,7 +226,7 @@ export function setupReviewMode({ activate = true, loopCurrentSplit = false }) {
 			trackingConfig: { ...trackingConfig, trackingMode: "inactive" },
 		});
 		this.setSortType("time-descending");
-		this.watcherForTrackingMode(null, false);
+		this.watcherForTrackingMode(null);
 	}
 	// =====================================
 
@@ -378,40 +363,43 @@ export function alertAtKeyMoments() {
 }
 
 export function notifyReviewStatus() {
-	const { reviewConfig, trackingConfig, duration } = this.state;
-	const currentSplit = parseInt(trackingConfig.endPosition / trackingConfig.interval);
-	const totalSplit = parseInt(duration / trackingConfig.interval);
+	const { reviewConfig, trackingConfig } = this.state;
+
+	let activeMode =
+		reviewConfig.reviewMode !== "inactive"
+			? "Review is: ON"
+			: trackingConfig.trackingMode !== "inactive"
+			? "Tracking is: ON"
+			: "Default Mode";
+
+	const currentSplit = this.getSplit();
 	let reviews = JSON.parse(localStorage.getItem("reviews"));
 
-	let videoStat =
+	let splitStats =
 		reviews && reviews[this.state.url]?.replayHistory[`split-${currentSplit}`]?.count;
 
 	this.notify({
-		title: `Video Stats:
-        \r\nSplit watch count:: ${videoStat ?? 0} times!
-        \r\nReview: is ${
-			reviewConfig.reviewMode === "active" ? "ON!:" : "OFF!:"
-		}\r\nStart Time: ${toMinutesSeconds(
+		title: `Video Stats: ${activeMode}`,
+		message: `Split Watch Count: ${splitStats ?? 0} ${splitStats === 1 ? "time" : "times"}!
+        \r\nStart Time: ${toMinutesSeconds(
 			trackingConfig.startPosition
 		)}\r\nEnd Time:  ${toMinutesSeconds(trackingConfig.endPosition)}`,
-		message: `Position:   [${currentSplit}] of [${totalSplit}]`,
 		delay: 20000,
 	});
 }
 
 export function notifyTrackingStatus() {
-	const { trackingConfig, duration } = this.state;
-	const currentSplit = parseInt(trackingConfig.endPosition / trackingConfig.interval);
-	const totalSplit = parseInt(duration / trackingConfig.interval);
+	const { trackingConfig } = this.state;
+	const currentSplit = this.getSplit();
 	let reviews = JSON.parse(localStorage.getItem("reviews"));
 
-	let videoStat =
+	let splitStats =
 		reviews && reviews[this.state.url]?.replayHistory[`split-${currentSplit}`]?.count;
 
 	this.notify({
 		title: "Tracking:",
-		message: `Split watch count:: ${videoStat ?? 0} times!
-        \r\nTracking: is ${trackingConfig.trackingMode === "active" ? "ON!:" : "OFF!:"}`,
+		message: `Split Watch Count: ${splitStats ?? 0} ${splitStats === 1 ? "time" : "times"}!
+        \r\nTracking: is ${trackingConfig.trackingMode === "active" ? "ON!" : "OFF!"}`,
 		delay: 20000,
 	});
 }
@@ -432,13 +420,13 @@ export function videoOnLoadeddata() {
 	//
 
 	//   setupTrackingMode();
-	//   this.watcherForTrackingMode(null, false);
+	//   this.watcherForTrackingMode(null);
 	//   setTimeout(this.notifyReviewStatus, 5000);
 
 	if (trackingConfig.trackingConfig === "active") {
 		this.setupTrackingMode({ activate: true });
 		// this.setupTrackingMode();
-		// this.watcherForTrackingMode(null, false);
+		// this.watcherForTrackingMode(null);
 		// return setTimeout(this.notifyTrackingStatus.bind(this), 5000);
 	}
 

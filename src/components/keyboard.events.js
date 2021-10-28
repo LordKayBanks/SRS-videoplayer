@@ -1,12 +1,12 @@
 const rules = [
 	{
 		condition(meta, code, shift) {
-			return code === "Backslash" || code === "Backspace" || code === "Enter";
+			return code === "ShiftRight" || code === "Slash" || code === "Backslash";
 		},
 		action(e) {
-			if (e.code === "Enter") {
+			if (e.code === "ShiftRight") {
 				this.changeReviewMode();
-			} else if (e.code === "Backspace") {
+			} else if (e.code === "Slash") {
 				const {
 					trackingConfig: { trackingMode },
 				} = this.state;
@@ -16,6 +16,40 @@ const rules = [
 				// this.trackingMode(null, false);
 			} else if (e.code === "Backslash") {
 				this.notifyReviewStatus();
+			}
+			return true;
+		},
+	},
+	{
+		condition(meta, code, shift) {
+			return code === "Enter" || code === "Backspace";
+		},
+		action(event) {
+			event.preventDefault();
+			if (event.code === "Enter") {
+				this.notify({
+					title: "SR-VideoPlayer:",
+					message: "Bookmark Created",
+				});
+			} else {
+				this.notify({
+					title: "SR-VideoPlayer:",
+					message: "Bookmark Removed",
+				});
+			}
+			return true;
+		},
+	},
+	{
+		condition(meta, code, shift) {
+			return code === "MetaRight" || code === "AltRight";
+		},
+		action(event) {
+			event.preventDefault();
+			if (this.trackingConfig.trackingMode === "active") {
+				if (event.code === "AltRight") this.studyStatisticsTracker(10);
+				else this.studyStatisticsTracker(-2);
+				// this.notify.display('Split count : 15')
 			}
 			return true;
 		},
@@ -95,40 +129,7 @@ const rules = [
 			return true;
 		},
 	},
-	{
-		condition(meta, code, shift) {
-			return code === "ShiftRight" || code === "Slash";
-		},
-		action(event) {
-			event.preventDefault();
-			if (event.code === "ShiftRight") {
-				this.notify({
-					title: "SR-Videoplayer:",
-					message: "Bookmark Created",
-				});
-			} else {
-				this.notify({
-					title: "SR-Videoplayer:",
-					message: "Bookmark Removed",
-				});
-			}
-			return true;
-		},
-	},
-	{
-		condition(meta, code, shift) {
-			return code === "MetaRight" || code === "AltRight";
-		},
-		action({ event }) {
-			event.preventDefault();
-			if (this.trackingConfig.trackingMode === "active") {
-				if (event.code === "AltRight") this.studyStatisticsTracker(10);
-				else this.studyStatisticsTracker(-2);
-				// this.notify.display('Split count : 15')
-			}
-			return true;
-		},
-	},
+
 	{
 		// change volume
 		condition(meta, code) {

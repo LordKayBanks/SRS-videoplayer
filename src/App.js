@@ -20,18 +20,19 @@ class App extends Component {
 		// url: 'https://www.youtube.com/watch?v=oUFJJNQGwhk',
 		url: null,
 		pip: false,
-		playing: true,
 		controls: false,
 		light: false,
-		volume: 0.8,
-		muted: true,
 		played: 0,
 		loaded: 0,
-		duration: 0,
-		currentTime: 0,
-		playbackRate: 2,
+		//=
+		playing: true,
+		volume: 0.8,
+		muted: true,
+		playbackRate: 3,
 		loop: false,
-		//  ======================
+		currentTime: 0,
+		duration: 0,
+		//  =====
 		currentPosition: 0,
 		playlist: [],
 		sortType: "playlist",
@@ -698,19 +699,38 @@ class App extends Component {
 							volume={volume}
 							handleVolumeChange={this.handleVolumeChange}
 							currentTime={this.state.currentPosition}
+							setVideoPosition={this.setVideoPosition}
 							totalDuration={this.state.duration}
-							handleReviewMode={this.handleReviewMode}
 							playbackRate={playbackRate}
 							handlePlaybackRate={{
 								increaseSpeed: this.increaseSpeed,
 								reduceSpeed: this.reduceSpeed,
 							}}
-							reviewRange={{
-								reviewStartRange: this.state.reviewConfig.reviewStartRange,
-								reviewEndRange: this.state.reviewConfig.reviewEndRange,
-							}}
 							handlePrevious={this.handlePrevious}
 							handleNext={this.handleNext}
+							//==
+							handleRange={
+								this.state.reviewConfig.reviewMode !== "inactive"
+									? this.handleReviewMode.bind(this)
+									: this.state.trackingConfig.trackingMode !== "inactive"
+									? this.handleTrackingRange.bind(this)
+									: () => null
+							}
+							range={
+								this.state.reviewConfig.reviewMode !== "inactive"
+									? {
+											StartRange: this.state.reviewConfig
+												.reviewStartRange,
+											EndRange: this.state.reviewConfig.reviewEndRange,
+									  }
+									: this.state.trackingConfig.trackingMode !== "inactive"
+									? {
+											StartRange: this.state.trackingConfig
+												.startPosition,
+											EndRange: this.state.trackingConfig.endPosition,
+									  }
+									: { StartRange: 0, EndRange: this.state.duration }
+							}
 						></PlaybackControl>
 					</div>
 					<Toolbar
@@ -748,8 +768,10 @@ App.prototype.watcherForTrackingMode = statsService.watcherForTrackingMode;
 App.prototype.notifyTrackingStatus = statsService.notifyTrackingStatus;
 App.prototype.moveToPreviousPlaybackRange = statsService.moveToPreviousPlaybackRange;
 App.prototype.moveToNextPlaybackRange = statsService.moveToNextPlaybackRange;
+App.prototype.handleTrackingRange = statsService.handleTrackingRange;
 App.prototype.seekToTime = statsService.seekToTime;
 App.prototype.studyStatisticsTracker = statsService.studyStatisticsTracker;
+App.prototype.getSplit = statsService.getSplit;
 App.prototype.notifyReviewStatus = statsService.notifyReviewStatus;
 App.prototype.setupReviewMode = statsService.setupReviewMode;
 App.prototype.watcherForReviewMode = statsService.watcherForReviewMode;

@@ -1,8 +1,11 @@
+/* eslint-disable padding-line-between-statements */
 import Controls from "./component";
-import React from "react";
+import React, { useEffect } from "react";
 import RepeatRange from "../RepeatRange/component";
 import "./style.scss";
 import { convertToNearestX } from "../../utility";
+
+import { Range } from "react-range";
 
 function PlaybackControl({
 	playing,
@@ -12,11 +15,12 @@ function PlaybackControl({
 	volume,
 	handleVolumeChange,
 	currentTime,
+	setVideoPosition,
 	totalDuration,
 	playbackRate,
 	handlePlaybackRate,
-	reviewRange,
-	handleReviewMode,
+	range,
+	handleRange,
 	handlePrevious,
 	handleNext,
 }) {
@@ -26,8 +30,8 @@ function PlaybackControl({
 	MAX = convertToNearestX(MAX, STEP);
 
 	let values = [
-		convertToNearestX(parseInt(reviewRange.reviewStartRange), STEP),
-		convertToNearestX(parseInt(reviewRange.reviewEndRange), STEP),
+		convertToNearestX(parseInt(range.StartRange), STEP),
+		convertToNearestX(parseInt(range.EndRange), STEP),
 	];
 	return (
 		<div
@@ -42,18 +46,28 @@ function PlaybackControl({
 						height: "4px",
 						background: `linear-gradient(to right, #18ff00 ${position}%, rgba(255,255,255,0) ${position}%)`,
 						position: "relative",
-						top: "15px",
+						// top: "18px",
+						top: "55px",
 					}}
 				></div>
-
-				{!!MAX && (
-					<RepeatRange
-						handleReviewMode={handleReviewMode}
-						values={values}
-						MAX={MAX}
-						STEP={STEP}
-					></RepeatRange>
-				)}
+				<div
+					className="prog-container"
+					style={{ position: "relate", top: "42px", width: " 100%", zIndex: "5" }}
+				>
+					<SuperSimple
+						MAX={parseInt(totalDuration)}
+						appValue={[position]}
+						handleValueChange={setVideoPosition}
+					></SuperSimple>
+					{!!MAX && (
+						<RepeatRange
+							handleRange={handleRange}
+							values={values}
+							MAX={MAX}
+							STEP={STEP}
+						></RepeatRange>
+					)}
+				</div>
 
 				<Controls
 					playing={playing}
@@ -75,3 +89,44 @@ function PlaybackControl({
 }
 
 export default PlaybackControl;
+const SuperSimple = ({ MAX, appValue, handleValueChange }) => {
+	return (
+		<Range
+			step={0.1}
+			min={0}
+			max={100}
+			values={appValue}
+			onChange={(values) => {
+				let updatedValue = (values[0] / 100) * MAX;
+				handleValueChange(updatedValue);
+			}}
+			renderTrack={({ props, children }) => (
+				<div
+					{...props}
+					style={{
+						...props.style,
+						height: "42px",
+						width: "100%",
+						backgroundColor: "transparent",
+						position: "relative",
+						top: "42px",
+						zIndex: "20",
+					}}
+				>
+					{children}
+				</div>
+			)}
+			renderThumb={({ props }) => (
+				<div
+					{...props}
+					// style={{
+					// 	...props.style,
+					// 	height: "52px",
+					// 	width: "52px",
+					// 	backgroundColor: "#006eff",
+					// }}
+				/>
+			)}
+		/>
+	);
+};

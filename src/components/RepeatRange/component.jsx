@@ -3,7 +3,7 @@ import React from "react";
 import { toMinutesSeconds, convertToNearestX } from "../../utility";
 
 const COLORS = ["#2467e6", "#ff0000", "#9CBCF8", "#ccc"];
-const THUMB_SIZE = 32;
+const THUMB_SIZE = 42;
 
 class RepeatRange extends React.Component {
 	constructor(props) {
@@ -64,7 +64,7 @@ class RepeatRange extends React.Component {
 			let newMinLeft = Math.max(0, valueMin - STEP);
 			newMinLeft = convertToNearestX(newMinLeft, STEP);
 			this.setState({ values: [newMinLeft, valueMax] }, () =>
-				this.props.handleReviewMode([newMinLeft, valueMax])
+				this.props.handleRange([newMinLeft, valueMax])
 			);
 			return;
 		}
@@ -73,7 +73,7 @@ class RepeatRange extends React.Component {
 			let newMinRight = Math.min(valueMax - STEP, valueMin + STEP);
 			newMinRight = convertToNearestX(newMinRight, STEP);
 			this.setState({ values: [newMinRight, valueMax] }, () =>
-				this.props.handleReviewMode([newMinRight, valueMax])
+				this.props.handleRange([newMinRight, valueMax])
 			);
 			return;
 		}
@@ -83,7 +83,7 @@ class RepeatRange extends React.Component {
 			let newMaxLeft = Math.max(valueMin + STEP, valueMax - STEP);
 			newMaxLeft = convertToNearestX(newMaxLeft, STEP);
 			this.setState({ values: [valueMin, newMaxLeft] }, () =>
-				this.props.handleReviewMode([valueMin, newMaxLeft])
+				this.props.handleRange([valueMin, newMaxLeft])
 			);
 			return;
 		}
@@ -92,7 +92,7 @@ class RepeatRange extends React.Component {
 			let newMaxRight = Math.min(MAX, valueMax + STEP);
 			newMaxRight = convertToNearestX(newMaxRight, STEP);
 			this.setState({ values: [valueMin, newMaxRight] }, () =>
-				this.props.handleReviewMode([valueMin, newMaxRight])
+				this.props.handleRange([valueMin, newMaxRight])
 			);
 			return;
 		}
@@ -157,6 +157,7 @@ class RepeatRange extends React.Component {
 					justifyContent: "center",
 					alignItems: "center",
 					boxShadow: "0px 2px 6px #AAA",
+					cursor: "grab",
 				}}
 			>
 				<ThumbLabel rangeRef={this.rangeRef.current} values={values} index={index} />
@@ -165,6 +166,7 @@ class RepeatRange extends React.Component {
 						height: "16px",
 						width: "5px",
 						backgroundColor: isDragged ? "#548BF4" : "#CCC",
+						cursor: "not-allowed",
 					}}
 				/>
 			</div>
@@ -185,7 +187,7 @@ class RepeatRange extends React.Component {
 					max={MAX}
 					rtl={this.props.rtl}
 					onChange={(values) => {
-						this.props.handleReviewMode(values);
+						this.props.handleRange(values);
 						this.setState({ values });
 					}}
 					renderMark={renderMark}
