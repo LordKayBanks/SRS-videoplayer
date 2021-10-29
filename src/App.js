@@ -4,7 +4,9 @@ import "react-notifications-component/dist/theme.css";
 import * as statsService from "./components/stats.service";
 
 import React, { Component } from "react";
-import ReactNotification, { store } from "react-notifications-component";
+import ReactNotification, {
+	store,
+} from "react-notifications-component";
 
 import PlaybackControl from "./components/playbackControl";
 import ReactPlayer from "react-player";
@@ -91,7 +93,9 @@ class App extends Component {
 				() => {
 					this.setupReviewMode({
 						activate: true,
-						loopCurrentSplit: this.state.reviewConfig.reviewMode === "loop",
+						loopCurrentSplit:
+							this.state.reviewConfig.reviewMode ===
+							"loop",
 					});
 				}
 			);
@@ -109,14 +113,18 @@ class App extends Component {
 	}
 
 	componentWillUnmount() {
-		document.removeEventListener("keydown", documentOnKeyDown(this));
+		document.removeEventListener(
+			"keydown",
+			documentOnKeyDown(this)
+		);
 	}
 
 	notify({
 		title = "SR-Videoplayer: Sample Message Title",
 		message = "This is a sample message",
 	}) {
-		this.state.notificationID && store.removeNotification(this.state.notificationID);
+		this.state.notificationID &&
+			store.removeNotification(this.state.notificationID);
 
 		const notificationID = store.addNotification({
 			title: title,
@@ -179,7 +187,11 @@ class App extends Component {
 	shufflePlaylist = () => {
 		if (this.state.sortType === "playlist") {
 			let array = this.state.playlist;
-			console.log("🚀 ==> this.state.playlist", this.state.playlist);
+
+			console.log(
+				"🚀 ==> this.state.playlist",
+				this.state.playlist
+			);
 
 			let currentIndex = array.length,
 				randomIndex;
@@ -187,7 +199,9 @@ class App extends Component {
 			// While there remain elements to shuffle...
 			while (currentIndex !== 0) {
 				// Pick a remaining element...
-				randomIndex = Math.floor(Math.random() * currentIndex);
+				randomIndex = Math.floor(
+					Math.random() * currentIndex
+				);
 				currentIndex--;
 				// And swap it with the current element.
 				[array[currentIndex], array[randomIndex]] = [
@@ -245,7 +259,8 @@ class App extends Component {
 			(item) => item.id === this.state.currentlyPlaying
 		);
 
-		if (category && this.state.currentCategory.length) return this.handleEnded(false);
+		if (category && this.state.currentCategory.length)
+			return this.handleEnded(false);
 
 		let currentlyPlaying;
 		let currentlyPlayingIndex;
@@ -267,17 +282,27 @@ class App extends Component {
 			currentlyPlayingIndex = this.state.playlist.length - 1;
 		}
 
-		newCurrentlyPlayingOBJ = this.state.playlist[currentlyPlayingIndex];
+		newCurrentlyPlayingOBJ = this.state.playlist[
+			currentlyPlayingIndex
+		];
 		const playingType = newCurrentlyPlayingOBJ["type"];
 		if (playingType === "separator") {
 			const nextPlayableIndex = currentlyPlayingIndex - 1;
-			const nextPlayableIndexOBJ = this.state.playlist[nextPlayableIndex];
+
+			const nextPlayableIndexOBJ = this.state.playlist[
+				nextPlayableIndex
+			];
+
 			const playableUniqueID = nextPlayableIndexOBJ["id"];
 			return this.handlePrevious(null, playableUniqueID);
 		}
 
 		const newCurrentlyPlaying = newCurrentlyPlayingOBJ["id"];
-		this.setCurrentlyPlaying(newCurrentlyPlaying, newCurrentlyPlayingOBJ);
+
+		this.setCurrentlyPlaying(
+			newCurrentlyPlaying,
+			newCurrentlyPlayingOBJ
+		);
 	};
 
 	handleNext = (_, playableUniqueID) => {
@@ -285,7 +310,8 @@ class App extends Component {
 			(item) => item.id === this.state.currentlyPlaying
 		);
 
-		if (res?.category && this.state.currentCategory.length) return this.handleEnded(true);
+		if (res?.category && this.state.currentCategory.length)
+			return this.handleEnded(true);
 
 		let currentlyPlaying;
 		let currentlyPlayingIndex;
@@ -307,7 +333,9 @@ class App extends Component {
 			currentlyPlayingIndex = 0;
 		}
 
-		newCurrentlyPlayingOBJ = this.state.playlist[currentlyPlayingIndex];
+		newCurrentlyPlayingOBJ = this.state.playlist[
+			currentlyPlayingIndex
+		];
 		const playingType = newCurrentlyPlayingOBJ["type"];
 		if (playingType === "separator") {
 			let nextPlayableIndex = currentlyPlayingIndex + 1;
@@ -315,13 +343,20 @@ class App extends Component {
 				nextPlayableIndex = 0;
 			}
 
-			const nextPlayableIndexOBJ = this.state.playlist[nextPlayableIndex];
+			const nextPlayableIndexOBJ = this.state.playlist[
+				nextPlayableIndex
+			];
+
 			const playableUniqueID = nextPlayableIndexOBJ["id"];
 			return this.handleNext(null, playableUniqueID);
 		}
 
 		const newCurrentlyPlaying = newCurrentlyPlayingOBJ["id"];
-		this.setCurrentlyPlaying(newCurrentlyPlaying, newCurrentlyPlayingOBJ);
+
+		this.setCurrentlyPlaying(
+			newCurrentlyPlaying,
+			newCurrentlyPlayingOBJ
+		);
 	};
 
 	handlePause = () => {
@@ -331,7 +366,10 @@ class App extends Component {
 	};
 
 	handlePlay = () => {
-		this.setState({ playing: true, duration: this.player?.getDuration() });
+		this.setState({
+			playing: true,
+			duration: this.player?.getDuration(),
+		});
 		console.log("onPlay");
 		// this.unSubscribeCurrentPosition = setInterval(() => {
 		// 	this.setState({ currentPosition: this.player?.getCurrentTime() });
@@ -340,7 +378,10 @@ class App extends Component {
 
 	handleError = (error) => {
 		this.handleNext();
-		console.log("🚀 ~ file: App.js ~ line 169 ~ App ~ error", error);
+		console.log(
+			"🚀 ~ file: App.js ~ line 169 ~ App ~ error",
+			error
+		);
 	};
 
 	getFilteredPlaylist(incrementIndex = true) {
@@ -350,7 +391,8 @@ class App extends Component {
 			return this.state.currentCategory.includes(item.category);
 		});
 
-		if (!filteredPlaylist.length) filteredPlaylist = this.state.playlist;
+		if (!filteredPlaylist.length)
+			filteredPlaylist = this.state.playlist;
 
 		let currentlyPlayingIndex = filteredPlaylist.findIndex(
 			(item) => item.id === currentlyPlayingUniqueID
@@ -359,22 +401,34 @@ class App extends Component {
 	}
 
 	handleEnded = (incrementIndex = true) => {
-		let { currentlyPlayingIndex, filteredPlaylist } = this.getFilteredPlaylist();
+		let {
+			currentlyPlayingIndex,
+			filteredPlaylist,
+		} = this.getFilteredPlaylist();
 
 		currentlyPlayingIndex = categoryNextPreviousNavigation(
 			currentlyPlayingIndex,
 			filteredPlaylist,
 			incrementIndex
 		);
-		let newCurrentlyPlayingOBJ = filteredPlaylist[currentlyPlayingIndex];
+
+		let newCurrentlyPlayingOBJ =
+			filteredPlaylist[currentlyPlayingIndex];
+
 		let newCurrentlyPlaying = newCurrentlyPlayingOBJ["id"];
 		// ============================================
 		if (
 			this.state.reviewConfig.reviewMode === "active" ||
 			this.state.currentCategory.length
 		) {
-			console.log("🚀 ==> newCurrentlyPlayingOBJ", newCurrentlyPlayingOBJ);
-			return this.setCurrentlyPlaying(newCurrentlyPlaying, newCurrentlyPlayingOBJ);
+			console.log(
+				"🚀 ==> newCurrentlyPlayingOBJ",
+				newCurrentlyPlayingOBJ
+			);
+			return this.setCurrentlyPlaying(
+				newCurrentlyPlaying,
+				newCurrentlyPlayingOBJ
+			);
 		}
 
 		if (this.state.repeatMode === "no-repeat") {
@@ -389,22 +443,42 @@ class App extends Component {
 	};
 
 	setCurrentlyPlayingPublic = (uniqueId, callback = () => {}) => {
-		const chosenItemIndex = this.state.playlist.findIndex((item) => item.id === uniqueId);
-		const chosenItemItemOBJ = this.state.playlist[chosenItemIndex];
+		const chosenItemIndex = this.state.playlist.findIndex(
+			(item) => item.id === uniqueId
+		);
+		const chosenItemItemOBJ = this.state.playlist[
+			chosenItemIndex
+		];
+
 		const playingType = chosenItemItemOBJ["type"];
 		if (playingType === "separator") {
 			const nextPlayableIndex = chosenItemIndex + 1;
-			const nextPlayableIndexOBJ = this.state.playlist[nextPlayableIndex];
+
+			const nextPlayableIndexOBJ = this.state.playlist[
+				nextPlayableIndex
+			];
+
 			const playableUniqueID = nextPlayableIndexOBJ["id"];
 			this.setCurrentlyPlayingPublic(playableUniqueID);
 		}
 
-		this.setCurrentlyPlaying(uniqueId, chosenItemItemOBJ, callback);
+		this.setCurrentlyPlaying(
+			uniqueId,
+			chosenItemItemOBJ,
+			callback
+		);
 	};
 
-	setCurrentlyPlaying = (uniqueId, currentlyPlayingOBJ, callback = () => {}) => {
+	setCurrentlyPlaying = (
+		uniqueId,
+		currentlyPlayingOBJ,
+		callback = () => {}
+	) => {
 		if (this.state.reviewConfig.reviewMode === "active") {
-			console.log("🚀 ==> currentlyPlayingOBJ", currentlyPlayingOBJ);
+			console.log(
+				"🚀 ==> currentlyPlayingOBJ",
+				currentlyPlayingOBJ
+			);
 			let reviewStartRange = currentlyPlayingOBJ.startTime;
 			let reviewEndRange = currentlyPlayingOBJ.endTime;
 
@@ -456,7 +530,9 @@ class App extends Component {
 			newCategories = [...this.state.currentCategory, category];
 			newCategories = [...new Set(newCategories)];
 		} else {
-			newCategories = this.state.currentCategory.filter((item) => item !== category);
+			newCategories = this.state.currentCategory.filter(
+				(item) => item !== category
+			);
 		}
 
 		this.setState(
@@ -471,7 +547,11 @@ class App extends Component {
 		);
 	};
 
-	setPlaylist = (items = [], replaceOldPlaylist, callback = () => {}) => {
+	setPlaylist = (
+		items = [],
+		replaceOldPlaylist,
+		callback = () => {}
+	) => {
 		if (!items.length) return;
 
 		let currentlyPlaying;
@@ -486,10 +566,15 @@ class App extends Component {
 				index = index + 1;
 			}
 
-			currentlyPlaying = newPlaylist.find((item) => item.id === nextItemToPlay.id);
+			currentlyPlaying = newPlaylist.find(
+				(item) => item.id === nextItemToPlay.id
+			);
 		} else {
 			const currentPlaylist = this.state.playlist;
-			newPlaylist = [...currentPlaylist, ...items].filter((item) => !item.isReview);
+
+			newPlaylist = [...currentPlaylist, ...items].filter(
+				(item) => !item.isReview
+			);
 			// .filter(item => !item.category)
 			let index = 0;
 			nextItemToPlay = items[index];
@@ -498,7 +583,9 @@ class App extends Component {
 				index = index + 1;
 			}
 
-			currentlyPlaying = newPlaylist.find((item) => item.id === nextItemToPlay.id);
+			currentlyPlaying = newPlaylist.find(
+				(item) => item.id === nextItemToPlay.id
+			);
 		}
 
 		this.setState(
@@ -603,7 +690,9 @@ class App extends Component {
 	};
 
 	renderLoadButton = (url, label) => {
-		return <button onClick={() => this.load(url)}>{label}</button>;
+		return (
+			<button onClick={() => this.load(url)}>{label}</button>
+		);
 	};
 
 	ref = (player) => {
@@ -697,7 +786,9 @@ class App extends Component {
 							muted={muted}
 							handleToggleMuted={this.handleToggleMuted}
 							volume={volume}
-							handleVolumeChange={this.handleVolumeChange}
+							handleVolumeChange={
+								this.handleVolumeChange
+							}
 							currentTime={this.state.currentPosition}
 							setVideoPosition={this.setVideoPosition}
 							totalDuration={this.state.duration}
@@ -710,34 +801,60 @@ class App extends Component {
 							handleNext={this.handleNext}
 							//==
 							handleRange={
-								this.state.reviewConfig.reviewMode !== "inactive"
+								this.state.reviewConfig.reviewMode !==
+								"inactive"
 									? this.handleReviewMode.bind(this)
-									: this.state.trackingConfig.trackingMode !== "inactive"
-									? this.handleTrackingRange.bind(this)
+									: this.state.trackingConfig
+											.trackingMode !==
+									  "inactive"
+									? this.handleTrackingRange.bind(
+											this
+									  )
 									: () => null
 							}
 							range={
-								this.state.reviewConfig.reviewMode !== "inactive"
+								this.state.reviewConfig.reviewMode !==
+								"inactive"
 									? {
-											StartRange: this.state.reviewConfig
+											StartRange: this.state
+												.reviewConfig
 												.reviewStartRange,
-											EndRange: this.state.reviewConfig.reviewEndRange,
+											EndRange: this.state
+												.reviewConfig
+												.reviewEndRange,
 									  }
-									: this.state.trackingConfig.trackingMode !== "inactive"
+									: this.state.trackingConfig
+											.trackingMode !==
+									  "inactive"
 									? {
-											StartRange: this.state.trackingConfig
+											StartRange: this.state
+												.trackingConfig
 												.startPosition,
-											EndRange: this.state.trackingConfig.endPosition,
+											EndRange: this.state
+												.trackingConfig
+												.endPosition,
 									  }
-									: { StartRange: 0, EndRange: this.state.duration }
+									: {
+											StartRange: 0,
+											EndRange: this.state
+												.duration,
+									  }
 							}
 						></PlaybackControl>
 					</div>
 					<Toolbar
-						reviewMode={this.state.reviewConfig.reviewMode}
-						setupReviewMode={this.setupReviewMode.bind(this)}
-						trackingMode={this.state.trackingConfig.trackingMode}
-						setupTrackingMode={this.setupTrackingMode.bind(this)}
+						reviewMode={
+							this.state.reviewConfig.reviewMode
+						}
+						setupReviewMode={this.setupReviewMode.bind(
+							this
+						)}
+						trackingMode={
+							this.state.trackingConfig.trackingMode
+						}
+						setupTrackingMode={this.setupTrackingMode.bind(
+							this
+						)}
 						//==
 						shufflePlaylist={this.shufflePlaylist}
 						sortType={this.state.sortType}
@@ -745,7 +862,9 @@ class App extends Component {
 						//=
 						setCurrentCategory={this.setCurrentCategory}
 						currentlyPlaying={this.state.currentlyPlaying}
-						setCurrentlyPlaying={this.setCurrentlyPlayingPublic}
+						setCurrentlyPlaying={
+							this.setCurrentlyPlayingPublic
+						}
 						playlist={this.state.playlist}
 						setPlaylist={this.setPlaylist}
 						handlePrevious={this.handlePrevious}
@@ -764,17 +883,26 @@ class App extends Component {
 }
 App.prototype.alertConfig = statsService.alertConfig;
 App.prototype.setupTrackingMode = statsService.setupTrackingMode;
-App.prototype.watcherForTrackingMode = statsService.watcherForTrackingMode;
-App.prototype.notifyTrackingStatus = statsService.notifyTrackingStatus;
-App.prototype.moveToPreviousPlaybackRange = statsService.moveToPreviousPlaybackRange;
-App.prototype.moveToNextPlaybackRange = statsService.moveToNextPlaybackRange;
+App.prototype.watcherForTrackingMode =
+	statsService.watcherForTrackingMode;
+
+App.prototype.notifyTrackingStatus =
+	statsService.notifyTrackingStatus;
+
+App.prototype.moveToPreviousPlaybackRange =
+	statsService.moveToPreviousPlaybackRange;
+
+App.prototype.moveToNextPlaybackRange =
+	statsService.moveToNextPlaybackRange;
 App.prototype.handleTrackingRange = statsService.handleTrackingRange;
 App.prototype.seekToTime = statsService.seekToTime;
-App.prototype.studyStatisticsTracker = statsService.studyStatisticsTracker;
+App.prototype.studyStatisticsTracker =
+	statsService.studyStatisticsTracker;
 App.prototype.getSplit = statsService.getSplit;
 App.prototype.notifyReviewStatus = statsService.notifyReviewStatus;
 App.prototype.setupReviewMode = statsService.setupReviewMode;
-App.prototype.watcherForReviewMode = statsService.watcherForReviewMode;
+App.prototype.watcherForReviewMode =
+	statsService.watcherForReviewMode;
 App.prototype.alertAtKeyMoments = statsService.alertAtKeyMoments;
 App.prototype.videoOnLoadeddata = statsService.videoOnLoadeddata;
 App.prototype.videoOnPause = statsService.videoOnPause;
