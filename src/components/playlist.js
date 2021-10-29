@@ -184,9 +184,17 @@ class Playlist extends Component {
 				}
 			);
 
-			this.setState({
-				dragClassName: "",
-			});
+			this.setState(
+				{
+					dragClassName: "",
+				},
+				() => {
+					setTimeout(() => {
+						console.log("🚀 ==> setTimeout ==> setTimeout");
+						this.forceUpdate();
+					}, 1000);
+				}
+			);
 		} else if (event.stopPropagation) {
 			event.stopPropagation();
 		} else {
@@ -236,7 +244,9 @@ class Playlist extends Component {
 			drop([...e.dataTransfer.items], playlistCreator.loadVideo);
 			e.dataTransfer.clearData();
 			this.dragCounter = 0;
-			this.props.setPlaylist(playlistCreator.entries, false, () => {});
+			this.setState({ playlist: playlistCreator.entries }, () =>
+				this.props.setPlaylist(playlistCreator.entries, false, () => {})
+			);
 		}
 	};
 	//========================================
