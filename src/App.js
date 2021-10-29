@@ -27,7 +27,7 @@ class App extends Component {
 		played: 0,
 		loaded: 0,
 		//=
-		playing: true,
+		playing: false,
 		volume: 0.8,
 		muted: true,
 		playbackRate: 3,
@@ -360,9 +360,8 @@ class App extends Component {
 	};
 
 	handlePause = () => {
-		//  console.log('onPause')
-		// clearInterval(this.unSubscribeCurrentPosition);
 		this.setState({ playing: false });
+		//  console.log('onPause')
 	};
 
 	handlePlay = () => {
@@ -370,7 +369,7 @@ class App extends Component {
 			playing: true,
 			duration: this.player?.getDuration(),
 		});
-		console.log("onPlay");
+		// console.log("onPlay");
 		// this.unSubscribeCurrentPosition = setInterval(() => {
 		// 	this.setState({ currentPosition: this.player?.getCurrentTime() });
 		// }, 1000);
@@ -378,10 +377,7 @@ class App extends Component {
 
 	handleError = (error) => {
 		this.handleNext();
-		console.log(
-			"🚀 ~ file: App.js ~ line 169 ~ App ~ error",
-			error
-		);
+		console.log("🚀 ==> handleError", error);
 	};
 
 	getFilteredPlaylist(incrementIndex = true) {
@@ -469,59 +465,53 @@ class App extends Component {
 		);
 	};
 
-	setCurrentlyPlaying = (
-		uniqueId,
-		currentlyPlayingOBJ,
-		callback = () => {}
-	) => {
-		if (this.state.reviewConfig.reviewMode === "active") {
-			console.log(
-				"🚀 ==> currentlyPlayingOBJ",
-				currentlyPlayingOBJ
-			);
-			let reviewStartRange = currentlyPlayingOBJ.startTime;
-			let reviewEndRange = currentlyPlayingOBJ.endTime;
-
-			// return setTimeout(() => {
-			this.setState(
-				{
-					reviewConfig: {
-						...this.state.reviewConfig,
-						reviewStartRange,
-						reviewEndRange,
-					},
-				},
-				() => {
-					this.setState(
-						{
-							url: currentlyPlayingOBJ.path,
-							currentlyPlaying: uniqueId,
-							playing: true,
-							title: currentlyPlayingOBJ.name,
-						},
-						() => {
-							callback();
-						}
-						// console.error('🚀 🚀 🚀 currentlyPlaying: ', this.state)
-					);
-				}
-			);
-			// }, 2000);
-			return;
-		}
-
-		this.setState(
-			{
+	setCurrentlyPlaying = (uniqueId, currentlyPlayingOBJ) => {
+		if (this.state.reviewConfig.reviewMode === "inactive") {
+			this.setState({
 				url: currentlyPlayingOBJ.path,
 				currentlyPlaying: uniqueId,
 				playing: true,
 				title: currentlyPlayingOBJ.name,
+			});
+			return;
+		}
+
+		if (this.state.url !== currentlyPlayingOBJ.path) {
+			this.setState({
+				url: currentlyPlayingOBJ.path,
+				currentlyPlaying: uniqueId,
+				playing: true,
+				title: currentlyPlayingOBJ.name,
+			});
+			return;
+		}
+
+		// =======================
+
+		let reviewStartRange = currentlyPlayingOBJ.startTime;
+		let reviewEndRange = currentlyPlayingOBJ.endTime;
+
+		this.setState({
+			url: "test",
+			reviewConfig: {
+				...this.state.reviewConfig,
+				reviewStartRange,
+				reviewEndRange,
 			},
-			() => {
-				callback();
-			}
-			// console.error('🚀 🚀 🚀 currentlyPlaying: ', this.state)
-		);
+		});
+
+		this.setState({
+			url: currentlyPlayingOBJ.path,
+			currentlyPlaying: uniqueId,
+			playing: true,
+			title: currentlyPlayingOBJ.name,
+			reviewConfig: {
+				...this.state.reviewConfig,
+				reviewStartRange,
+				reviewEndRange,
+			},
+		});
+		return;
 	};
 
 	setCurrentCategory = (category, addCategory) => {
@@ -616,8 +606,8 @@ class App extends Component {
 	};
 
 	handleDuration = (duration) => {
-		console.log("onDuration", duration);
 		this.setState({ duration });
+		// console.log("onDuration", duration);
 	};
 
 	handleToggleControls = () => {
@@ -751,19 +741,21 @@ class App extends Component {
 							volume={volume}
 							muted={muted}
 							onReady={() => {
-								console.log("onReady");
 								//  this.videoOnLoadeddata()
+								// console.log("onReady");
 							}}
 							onStart={() => {
-								console.log("onStart");
 								this.videoOnLoadeddata();
+								// console.log("onStart");
 							}}
 							onPlay={this.handlePlay}
 							onPause={this.handlePause}
 							onSeek={(e) => console.log("onSeek", e)}
 							onEnded={this.handleEnded}
 							onError={this.handleError}
-							onBuffer={() => console.log("onBuffer")}
+							onBuffer={() => {
+								// console.log("onBuffer");
+							}}
 							onEnablePIP={this.handleEnablePIP}
 							onDisablePIP={this.handleDisablePIP}
 							onProgress={this.handleProgress}
