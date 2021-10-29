@@ -110,14 +110,14 @@ export default function Controls({
 					max={1}
 				/>
 			</div>
-			<div className="bookmark-description">
+			<div className="bookmark-group">
 				<button
 					onClick={() => null}
 					className="bookmark-button"
 					style={{ marginRight: "5px" }}
 					title="Remove this Bookmark"
 				>
-					<BookmarkRemoveIcon height="18" width="18" />
+					<BookmarkRemoveIcon height="16" width="16" />
 				</button>
 				<button
 					onClick={() => null}
@@ -125,19 +125,19 @@ export default function Controls({
 					style={{ marginRight: "20px" }}
 					title="Add a Bookmark"
 				>
-					<BookmarkAddIcon height="18" width="18" />
+					<BookmarkAddIcon height="16" width="16" />
 				</button>
 
 				<div className="bookmark-note">
 					<button className="bookmark-button">
-						<EditNoteIcon height="18" width="18" />
+						<EditNoteIcon height="16" width="16" />
 					</button>
 					{bookmarkNote ? (
-						bookmarkNote
+						<span className="time">{bookmarkNote}</span>
 					) : (
 						<span className="time">
 							write a short description for this
-							bookmark
+							bookmark..
 						</span>
 					)}
 				</div>

@@ -1,4 +1,8 @@
-import { convertToNearestX, getVideoSplitFactor, toMinutesSeconds } from "../utility/index";
+import {
+	convertToNearestX,
+	getVideoSplitFactor,
+	toMinutesSeconds,
+} from "../utility/index";
 
 export const alertConfig = {
 	alertConfigMidwayTime: null,
@@ -12,11 +16,21 @@ export const alertConfig = {
 export function getSplit() {
 	const { trackingConfig, duration } = this.state;
 	let STEP = parseInt(duration / 10);
-	let currentSplitStart = convertToNearestX(trackingConfig.startPosition, STEP);
-	let currentSplitEnd = convertToNearestX(trackingConfig.endPosition, STEP);
+	let currentSplitStart = convertToNearestX(
+		trackingConfig.startPosition,
+		STEP
+	);
+	let currentSplitEnd = convertToNearestX(
+		trackingConfig.endPosition,
+		STEP
+	);
 	let normalizedDuration = convertToNearestX(duration, STEP);
-	currentSplitStart = parseInt((currentSplitStart / normalizedDuration) * 10);
-	currentSplitEnd = parseInt((currentSplitEnd / normalizedDuration) * 10);
+	currentSplitStart = parseInt(
+		(currentSplitStart / normalizedDuration) * 10
+	);
+	currentSplitEnd = parseInt(
+		(currentSplitEnd / normalizedDuration) * 10
+	);
 	return `${currentSplitStart}:${currentSplitEnd}`;
 }
 
@@ -40,6 +54,8 @@ export function studyStatisticsTracker(increment = 1) {
 					count: increment,
 					startTime: trackingConfig.startPosition,
 					endTime: trackingConfig.endPosition,
+					bookmarkNote: `write a short description for this
+							bookmark..`,
 				},
 			},
 			lastReviewDate: Date.now(),
@@ -53,14 +69,18 @@ export function studyStatisticsTracker(increment = 1) {
 			};
 		} else {
 			review.replayHistory[`split-${currentSplit}`].count =
-				review.replayHistory[`split-${currentSplit}`].count + increment;
+				review.replayHistory[`split-${currentSplit}`].count +
+				increment;
 		}
 
 		review.lastReviewDate = Date.now();
 	}
 
 	updatedReview[this.state.url] = { ...review };
-	localStorage.setItem("reviews", JSON.stringify({ ...updatedReview }));
+	localStorage.setItem(
+		"reviews",
+		JSON.stringify({ ...updatedReview })
+	);
 	// this.notifyReviewStatus();
 }
 
@@ -74,7 +94,10 @@ export function setupTrackingMode({ activate = true }) {
 		unsubscribeToTracking = null;
 		this.setState(
 			{
-				trackingConfig: { ...trackingConfig, trackingMode: "inactive" },
+				trackingConfig: {
+					...trackingConfig,
+					trackingMode: "inactive",
+				},
 			},
 			() => this.notifyTrackingStatus()
 		);
@@ -82,7 +105,9 @@ export function setupTrackingMode({ activate = true }) {
 	}
 
 	if (reviewConfig.reviewMode !== "inactive") {
-		this.setState({ reviewConfig: { ...reviewConfig, reviewMode: "inactive" } });
+		this.setState({
+			reviewConfig: { ...reviewConfig, reviewMode: "inactive" },
+		});
 		this.setSortType("playlist");
 		this.setupReviewMode({ activate: false });
 	}
@@ -92,8 +117,13 @@ export function setupTrackingMode({ activate = true }) {
 	let STEP = parseInt(duration / 10);
 	let interval = parseInt(duration / videoSplit);
 	interval = convertToNearestX(interval, STEP);
-	const startOffset = convertToNearestX(this.player?.getCurrentTime(), interval);
-	this.setState({ trackingConfig: { ...trackingConfig, interval, startOffset } });
+	const startOffset = convertToNearestX(
+		this.player?.getCurrentTime(),
+		interval
+	);
+	this.setState({
+		trackingConfig: { ...trackingConfig, interval, startOffset },
+	});
 	//====================
 	this.watcherForTrackingMode(null);
 }
@@ -109,7 +139,10 @@ export function watcherForTrackingMode(offSet) {
 	if (trackingConfig.trackingMode === "active") {
 		clearInterval(unsubscribeToTracking);
 		this.setState({
-			trackingConfig: { ...trackingConfig, trackingMode: "inactive" },
+			trackingConfig: {
+				...trackingConfig,
+				trackingMode: "inactive",
+			},
 		});
 		// this.notify({
 		// 	title: "Tracking mode:",
@@ -121,9 +154,16 @@ export function watcherForTrackingMode(offSet) {
 	let startPosition;
 	let endPosition;
 	startPosition = Math.max(trackingConfig.startOffset, 0);
-	endPosition = Math.min(startPosition + trackingConfig.interval, duration);
+	endPosition = Math.min(
+		startPosition + trackingConfig.interval,
+		duration
+	);
 	this.setState({
-		trackingConfig: { ...trackingConfig, startPosition, endPosition },
+		trackingConfig: {
+			...trackingConfig,
+			startPosition,
+			endPosition,
+		},
 	});
 	this.setSpeed(2);
 	const minDurationForVideoSplitFactor = 5 * 60;
@@ -151,7 +191,10 @@ export function watcherForTrackingMode(offSet) {
 
 	this.setState(
 		{
-			trackingConfig: { ...trackingConfig, trackingMode: "active" },
+			trackingConfig: {
+				...trackingConfig,
+				trackingMode: "active",
+			},
 		},
 		() => {
 			this.notifyTrackingStatus();
@@ -167,7 +210,11 @@ export function handleTrackingRange([startPosition, endPosition]) {
 	const { trackingConfig } = this.state;
 
 	this.setState({
-		trackingConfig: { ...trackingConfig, startPosition, endPosition },
+		trackingConfig: {
+			...trackingConfig,
+			startPosition,
+			endPosition,
+		},
 	});
 	this.setVideoPosition(startPosition);
 	this.notifyTrackingStatus();
@@ -181,10 +228,17 @@ export function moveToNextPlaybackRange() {
 		duration - trackingConfig.interval
 	);
 
-	const endPosition = Math.min(startPosition + trackingConfig.interval, duration);
+	const endPosition = Math.min(
+		startPosition + trackingConfig.interval,
+		duration
+	);
 
 	this.setState({
-		trackingConfig: { ...trackingConfig, startPosition, endPosition },
+		trackingConfig: {
+			...trackingConfig,
+			startPosition,
+			endPosition,
+		},
 	});
 	this.setVideoPosition(startPosition);
 	this.notifyTrackingStatus();
@@ -192,7 +246,10 @@ export function moveToNextPlaybackRange() {
 
 export function moveToPreviousPlaybackRange() {
 	const { trackingConfig, duration } = this.state;
-	const startPosition = Math.max(trackingConfig.startPosition - trackingConfig.interval, 0);
+	const startPosition = Math.max(
+		trackingConfig.startPosition - trackingConfig.interval,
+		0
+	);
 
 	const endPosition = Math.min(
 		trackingConfig.startPosition + trackingConfig.interval,
@@ -200,7 +257,11 @@ export function moveToPreviousPlaybackRange() {
 	);
 
 	this.setState({
-		trackingConfig: { ...trackingConfig, startPosition, endPosition },
+		trackingConfig: {
+			...trackingConfig,
+			startPosition,
+			endPosition,
+		},
 	});
 	this.setVideoPosition(startPosition);
 	this.notifyTrackingStatus();
@@ -209,7 +270,10 @@ export function moveToPreviousPlaybackRange() {
 // =============================================================================
 
 let unsubscribeToReview = null;
-export function setupReviewMode({ activate = true, loopCurrentSplit = false }) {
+export function setupReviewMode({
+	activate = true,
+	loopCurrentSplit = false,
+}) {
 	const { reviewConfig, trackingConfig } = this.state;
 	if (!activate) {
 		clearInterval(unsubscribeToReview);
@@ -223,7 +287,10 @@ export function setupReviewMode({ activate = true, loopCurrentSplit = false }) {
 	if (trackingConfig.trackingMode === "active") {
 		clearInterval(unsubscribeToReview);
 		this.setState({
-			trackingConfig: { ...trackingConfig, trackingMode: "inactive" },
+			trackingConfig: {
+				...trackingConfig,
+				trackingMode: "inactive",
+			},
 		});
 		this.setSortType("time-descending");
 		this.watcherForTrackingMode(null);
@@ -245,7 +312,10 @@ export function setupReviewMode({ activate = true, loopCurrentSplit = false }) {
 	} else {
 		this.setState(
 			{
-				reviewConfig: { ...reviewConfig, reviewMode: "active" },
+				reviewConfig: {
+					...reviewConfig,
+					reviewMode: "active",
+				},
 			},
 			() => {
 				this.notify({
@@ -255,7 +325,8 @@ export function setupReviewMode({ activate = true, loopCurrentSplit = false }) {
 			}
 		);
 	}
-	if (reviewConfig.reviewStartRange) this.setVideoPosition(reviewConfig.reviewStartRange);
+	if (reviewConfig.reviewStartRange)
+		this.setVideoPosition(reviewConfig.reviewStartRange);
 
 	clearInterval(unsubscribeToReview);
 	unsubscribeToReview = null;
@@ -269,18 +340,29 @@ export function watcherForReviewMode(loopCurrentSplit = false) {
 	//   ========================
 	unsubscribeToReview = setInterval(() => {
 		const { reviewConfig } = this.state;
-		if (this.player?.getCurrentTime() < reviewConfig.reviewStartRange) {
+		if (
+			this.player?.getCurrentTime() <
+			reviewConfig.reviewStartRange
+		) {
 			this.setVideoPosition(reviewConfig.reviewStartRange);
 		}
 
 		if (loopCurrentSplit) {
-			if (this.player?.getCurrentTime() < reviewConfig.reviewEndRange - 5) return;
+			if (
+				this.player?.getCurrentTime() <
+				reviewConfig.reviewEndRange - 5
+			)
+				return;
 
 			this.setVideoPosition(reviewConfig.reviewStartRange);
 			this.studyStatisticsTracker(0.5);
 			return;
 		}
-		if (this.player?.getCurrentTime() < reviewConfig.reviewEndRange - 5) return;
+		if (
+			this.player?.getCurrentTime() <
+			reviewConfig.reviewEndRange - 5
+		)
+			return;
 
 		this.studyStatisticsTracker(0.25);
 		// Todo ========
@@ -376,14 +458,21 @@ export function notifyReviewStatus() {
 	let reviews = JSON.parse(localStorage.getItem("reviews"));
 
 	let splitStats =
-		reviews && reviews[this.state.url]?.replayHistory[`split-${currentSplit}`]?.count;
+		reviews &&
+		reviews[this.state.url]?.replayHistory[
+			`split-${currentSplit}`
+		]?.count;
 
 	this.notify({
 		title: `Video Stats: ${activeMode}`,
-		message: `Split Watch Count: ${splitStats ?? 0} ${splitStats === 1 ? "time" : "times"}!
+		message: `Split Watch Count: ${splitStats ?? 0} ${
+			splitStats === 1 ? "time" : "times"
+		}!
         \r\nStart Time: ${toMinutesSeconds(
 			trackingConfig.startPosition
-		)}\r\nEnd Time:  ${toMinutesSeconds(trackingConfig.endPosition)}`,
+		)}\r\nEnd Time:  ${toMinutesSeconds(
+			trackingConfig.endPosition
+		)}`,
 		delay: 20000,
 	});
 }
@@ -394,12 +483,19 @@ export function notifyTrackingStatus() {
 	let reviews = JSON.parse(localStorage.getItem("reviews"));
 
 	let splitStats =
-		reviews && reviews[this.state.url]?.replayHistory[`split-${currentSplit}`]?.count;
+		reviews &&
+		reviews[this.state.url]?.replayHistory[
+			`split-${currentSplit}`
+		]?.count;
 
 	this.notify({
 		title: "Tracking:",
-		message: `Split Watch Count: ${splitStats ?? 0} ${splitStats === 1 ? "time" : "times"}!
-        \r\nTracking: is ${trackingConfig.trackingMode === "active" ? "ON!" : "OFF!"}`,
+		message: `Split Watch Count: ${splitStats ?? 0} ${
+			splitStats === 1 ? "time" : "times"
+		}!
+        \r\nTracking: is ${
+			trackingConfig.trackingMode === "active" ? "ON!" : "OFF!"
+		}`,
 		delay: 20000,
 	});
 }
@@ -411,7 +507,8 @@ export function videoOnLoadeddata() {
 	const { reviewConfig, trackingConfig } = this.state;
 
 	let isReviewMode_TrackingMode_Active =
-		trackingConfig.trackingMode !== "inactive" || reviewConfig.reviewMode !== "inactive";
+		trackingConfig.trackingMode !== "inactive" ||
+		reviewConfig.reviewMode !== "inactive";
 
 	if (!isReviewMode_TrackingMode_Active) {
 		this.alertAtKeyMoments();
