@@ -52,7 +52,12 @@ function PlaybackControl({
 				></div>
 				<div
 					className="prog-container"
-					style={{ position: "relate", top: "42px", width: " 100%", zIndex: "5" }}
+					style={{
+						position: "relate",
+						top: "42px",
+						width: " 100%",
+						zIndex: "5",
+					}}
 				>
 					<SuperSimple
 						MAX={parseInt(totalDuration)}
@@ -61,6 +66,7 @@ function PlaybackControl({
 					></SuperSimple>
 					{!!MAX && (
 						<RepeatRange
+							key={totalDuration}
 							handleRange={handleRange}
 							values={values}
 							MAX={MAX}

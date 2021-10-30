@@ -369,10 +369,6 @@ class App extends Component {
 			playing: true,
 			duration: this.player?.getDuration(),
 		});
-		// console.log("onPlay");
-		// this.unSubscribeCurrentPosition = setInterval(() => {
-		// 	this.setState({ currentPosition: this.player?.getCurrentTime() });
-		// }, 1000);
 	};
 
 	handleError = (error) => {
@@ -473,6 +469,16 @@ class App extends Component {
 				playing: true,
 				title: currentlyPlayingOBJ.name,
 			});
+
+			setTimeout(() => {
+				this.setState({
+					trackingConfig: {
+						...this.state.trackingConfig,
+						startPosition: 0,
+						endPosition: this.state.duration,
+					},
+				});
+			}, 1000);
 			return;
 		}
 
@@ -717,10 +723,18 @@ class App extends Component {
 			loop,
 			played,
 			// loaded,
-			// duration,
+			duration,
 			playbackRate,
 			pip,
+			reviewConfig,
+			trackingConfig,
 		} = this.state;
+		let KEY =
+			reviewConfig.reviewMode !== "inactive"
+				? reviewConfig.reviewEndRange
+				: trackingConfig.trackingMode !== "inactive"
+				? trackingConfig.endPosition
+				: duration;
 		return (
 			<div className="app">
 				<div className="player-wrapper">
@@ -773,6 +787,7 @@ class App extends Component {
 							}}
 						/>
 						<PlaybackControl
+							key={KEY}
 							playing={playing}
 							handlePlayPause={this.handlePlayPause}
 							muted={muted}

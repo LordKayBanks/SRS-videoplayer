@@ -16,6 +16,7 @@ export const alertConfig = {
 export function getSplit() {
 	const { trackingConfig, duration } = this.state;
 	let STEP = parseInt(duration / 10);
+
 	let currentSplitStart = convertToNearestX(
 		trackingConfig.startPosition,
 		STEP
@@ -24,10 +25,18 @@ export function getSplit() {
 		trackingConfig.endPosition,
 		STEP
 	);
+
 	let normalizedDuration = convertToNearestX(duration, STEP);
+
+	normalizedDuration =
+		normalizedDuration > duration
+			? normalizedDuration - STEP
+			: normalizedDuration;
+
 	currentSplitStart = parseInt(
 		(currentSplitStart / normalizedDuration) * 10
 	);
+
 	currentSplitEnd = parseInt(
 		(currentSplitEnd / normalizedDuration) * 10
 	);
@@ -117,10 +126,12 @@ export function setupTrackingMode({ activate = true }) {
 	let STEP = parseInt(duration / 10);
 	let interval = parseInt(duration / videoSplit);
 	interval = convertToNearestX(interval, STEP);
+
 	const startOffset = convertToNearestX(
 		this.player?.getCurrentTime(),
 		interval
 	);
+
 	this.setState({
 		trackingConfig: { ...trackingConfig, interval, startOffset },
 	});
@@ -158,6 +169,7 @@ export function watcherForTrackingMode(offSet) {
 		startPosition + trackingConfig.interval,
 		duration
 	);
+
 	this.setState({
 		trackingConfig: {
 			...trackingConfig,
@@ -227,7 +239,6 @@ export function moveToNextPlaybackRange() {
 		trackingConfig.startPosition + trackingConfig.interval,
 		duration - trackingConfig.interval
 	);
-
 	const endPosition = Math.min(
 		startPosition + trackingConfig.interval,
 		duration
@@ -246,11 +257,11 @@ export function moveToNextPlaybackRange() {
 
 export function moveToPreviousPlaybackRange() {
 	const { trackingConfig, duration } = this.state;
+
 	const startPosition = Math.max(
 		trackingConfig.startPosition - trackingConfig.interval,
 		0
 	);
-
 	const endPosition = Math.min(
 		trackingConfig.startPosition + trackingConfig.interval,
 		duration
