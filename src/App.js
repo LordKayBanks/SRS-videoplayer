@@ -3,7 +3,7 @@ import "react-notifications-component/dist/theme.css";
 
 import * as statsService from "./components/stats.service";
 
-import React, { Component } from "react";
+import React, { Component, createContext } from "react";
 import ReactNotification, {
 	store,
 } from "react-notifications-component";
@@ -17,6 +17,7 @@ import { findDOMNode } from "react-dom";
 import { hot } from "react-hot-loader";
 import screenfull from "screenfull";
 
+export const ToolbarState = createContext();
 class App extends Component {
 	state = {
 		// url: 'https://www.youtube.com/watch?v=oUFJJNQGwhk',
@@ -61,6 +62,7 @@ class App extends Component {
 			defaultEndOffset: 120,
 		},
 		//==========
+		toolbarOpen: true,
 	};
 
 	handleReviewMode = (values = []) => {
@@ -691,6 +693,10 @@ class App extends Component {
 		);
 	};
 
+	setToolbarOpen = () => {
+		this.setState({ toolbarOpen: !this.state.toolbarOpen });
+	};
+
 	ref = (player) => {
 		return (this.player = player);
 	};
@@ -728,6 +734,7 @@ class App extends Component {
 			pip,
 			reviewConfig,
 			trackingConfig,
+			toolbarOpen,
 		} = this.state;
 		let KEY =
 			reviewConfig.reviewMode !== "inactive"
@@ -738,7 +745,11 @@ class App extends Component {
 		return (
 			<div className="app">
 				<div className="player-wrapper">
-					<div>
+					<div
+						className={`player-container ${
+							toolbarOpen ? "open" : ""
+						}`}
+					>
 						<ReactPlayer
 							ref={this.ref}
 							className="react-player"
@@ -787,7 +798,7 @@ class App extends Component {
 							}}
 						/>
 						<PlaybackControl
-							key={KEY}
+							key={KEY || toolbarOpen}
 							playing={playing}
 							handlePlayPause={this.handlePlayPause}
 							muted={muted}
@@ -849,38 +860,49 @@ class App extends Component {
 							}
 						></PlaybackControl>
 					</div>
-					<Toolbar
-						reviewMode={
-							this.state.reviewConfig.reviewMode
-						}
-						setupReviewMode={this.setupReviewMode.bind(
-							this
-						)}
-						trackingMode={
-							this.state.trackingConfig.trackingMode
-						}
-						setupTrackingMode={this.setupTrackingMode.bind(
-							this
-						)}
-						//==
-						shufflePlaylist={this.shufflePlaylist}
-						sortType={this.state.sortType}
-						setSortType={this.setSortType}
-						//=
-						setCurrentCategory={this.setCurrentCategory}
-						currentlyPlaying={this.state.currentlyPlaying}
-						setCurrentlyPlaying={
-							this.setCurrentlyPlayingPublic
-						}
-						playlist={this.state.playlist}
-						setPlaylist={this.setPlaylist}
-						handlePrevious={this.handlePrevious}
-						handleNext={this.handleNext}
-						notify={this.notify}
-						//==
-						toggleRepeatMode={this.toggleRepeatMode}
-						repeatMode={this.state.repeatMode}
-					></Toolbar>
+					<ToolbarState.Provider
+						value={{
+							toolbarOpen,
+							setToolbarOpen: this.setToolbarOpen,
+						}}
+					>
+						<Toolbar
+							reviewMode={
+								this.state.reviewConfig.reviewMode
+							}
+							setupReviewMode={this.setupReviewMode.bind(
+								this
+							)}
+							trackingMode={
+								this.state.trackingConfig.trackingMode
+							}
+							setupTrackingMode={this.setupTrackingMode.bind(
+								this
+							)}
+							//==
+							shufflePlaylist={this.shufflePlaylist}
+							sortType={this.state.sortType}
+							setSortType={this.setSortType}
+							//=
+							setCurrentCategory={
+								this.setCurrentCategory
+							}
+							currentlyPlaying={
+								this.state.currentlyPlaying
+							}
+							setCurrentlyPlaying={
+								this.setCurrentlyPlayingPublic
+							}
+							playlist={this.state.playlist}
+							setPlaylist={this.setPlaylist}
+							handlePrevious={this.handlePrevious}
+							handleNext={this.handleNext}
+							notify={this.notify}
+							//==
+							toggleRepeatMode={this.toggleRepeatMode}
+							repeatMode={this.state.repeatMode}
+						></Toolbar>
+					</ToolbarState.Provider>
 
 					<ReactNotification></ReactNotification>
 				</div>

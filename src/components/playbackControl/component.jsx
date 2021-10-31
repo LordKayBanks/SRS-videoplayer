@@ -114,7 +114,10 @@ export default function Controls({
 				<button
 					onClick={() => null}
 					className="bookmark-button"
-					style={{ marginRight: "5px" }}
+					style={{
+						marginRight: "5px",
+						border: "1px solid #f0f8ff",
+					}}
 					title="Remove this Bookmark"
 				>
 					<BookmarkRemoveIcon height="16" width="16" />
@@ -122,7 +125,10 @@ export default function Controls({
 				<button
 					onClick={() => null}
 					className="bookmark-button"
-					style={{ marginRight: "20px" }}
+					style={{
+						marginRight: "20px",
+						background: "#f0f8ff ",
+					}}
 					title="Add a Bookmark"
 				>
 					<BookmarkAddIcon height="16" width="16" />

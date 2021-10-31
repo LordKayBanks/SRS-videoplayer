@@ -1,7 +1,7 @@
-import "./toolbar.css";
+import "./toolbar.scss";
 
-import React, { useState } from "react";
-
+import React, { useState, useContext } from "react";
+import { ToolbarState } from "../App";
 import Buttons from "./buttons";
 import Playlist from "./playlist";
 import SelectSortingOption from "./SortingOption";
@@ -24,11 +24,12 @@ export default function Toolbar({
 	setSortType,
 	sortType,
 }) {
-	const [toolbarOpen, setToolbarOpen] = useState(true);
+	// const [toolbarOpen, setToolbarOpen] = useState(true);
+	const { toolbarOpen, setToolbarOpen } = useContext(ToolbarState);
 	return (
 		<div
 			className={`toolbar ${
-				toolbarOpen ? "toolbar-open" : "hide-toolbar"
+				toolbarOpen ? "toolbar-open" : "toolbar-hide"
 			}`}
 		>
 			{toolbarOpen && (

@@ -38,7 +38,15 @@ function PlaybackControl({
 			className="playback-control"
 			style={{ background: playing ? "#00000034" : "#726d6d" }}
 		>
-			<div>
+			<div
+				className="prog-container"
+				style={{
+					position: "relative",
+					top: "-36px",
+					width: " 100%",
+					zIndex: "5",
+				}}
+			>
 				<div
 					className="progress"
 					style={{
@@ -50,46 +58,36 @@ function PlaybackControl({
 						top: "55px",
 					}}
 				></div>
-				<div
-					className="prog-container"
-					style={{
-						position: "relate",
-						top: "42px",
-						width: " 100%",
-						zIndex: "5",
-					}}
-				>
-					<SuperSimple
-						MAX={parseInt(totalDuration)}
-						appValue={[position]}
-						handleValueChange={setVideoPosition}
-					></SuperSimple>
-					{!!MAX && (
-						<RepeatRange
-							key={totalDuration}
-							handleRange={handleRange}
-							values={values}
-							MAX={MAX}
-							STEP={STEP}
-						></RepeatRange>
-					)}
-				</div>
-
-				<Controls
-					playing={playing}
-					handlePlayPause={handlePlayPause}
-					muted={muted}
-					handleToggleMuted={handleToggleMuted}
-					volume={volume}
-					handleVolumeChange={handleVolumeChange}
-					currentTime={currentTime}
-					totalDuration={totalDuration}
-					playbackRate={playbackRate}
-					handlePlaybackRate={handlePlaybackRate}
-					handlePrevious={handlePrevious}
-					handleNext={handleNext}
-				></Controls>
+				<SuperSimple
+					MAX={parseInt(totalDuration)}
+					appValue={[position]}
+					handleValueChange={setVideoPosition}
+				></SuperSimple>
+				{!!MAX && (
+					<RepeatRange
+						key={totalDuration}
+						handleRange={handleRange}
+						values={values}
+						MAX={MAX}
+						STEP={STEP}
+					></RepeatRange>
+				)}
 			</div>
+
+			<Controls
+				playing={playing}
+				handlePlayPause={handlePlayPause}
+				muted={muted}
+				handleToggleMuted={handleToggleMuted}
+				volume={volume}
+				handleVolumeChange={handleVolumeChange}
+				currentTime={currentTime}
+				totalDuration={totalDuration}
+				playbackRate={playbackRate}
+				handlePlaybackRate={handlePlaybackRate}
+				handlePrevious={handlePrevious}
+				handleNext={handleNext}
+			></Controls>
 		</div>
 	);
 }

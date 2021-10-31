@@ -1,0 +1,21 @@
+.toolbar {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	padding: 5px;
+}
+.toolbar-open {
+	width: 300px;
+}
+@media screen and (max-width: 600px) {
+	.toolbar-open {
+		width: unset;
+	}
+}
+.toolbar input[type="checkbox"] {
+	display: none;
+}
+
+.toolbar-hide {
+	width: 50px;
+}

@@ -29,8 +29,9 @@
 .player-wrapper {
 	font-size: 13px;
 	font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-	display: grid;
-	grid-template-columns: 1fr min-content;
+	// display: grid;
+	// grid-template-columns: 1fr min-content;
+	display: flex;
 	margin: 0;
 	height: 100vh;
 	color: var(--color);
@@ -41,6 +42,12 @@
 
 	& > div {
 		height: 100vh;
+	}
+}
+.player-container {
+	width: 100%;
+	&.open {
+		width: calc(100% - 300px);
 	}
 }
 

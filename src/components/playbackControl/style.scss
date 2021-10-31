@@ -25,7 +25,8 @@ body {
 	transition: all 0.25s ease-out;
 	flex-direction: column;
 
-	margin-top: 8px;
+	position: relative;
+	top: -20px;
 
 	.control-group {
 		display: flex;
@@ -75,6 +76,18 @@ body {
 	&:hover {
 		background: rgba(203, 133, 137, 0.75);
 	}
+
+	// @media (min-width: 768px) {
+	// 	padding: 0;
+	// 	svg {
+	// 		padding: 0;
+	// 		height: 18px;
+	// 	}
+	// 	&.rate-increase,
+	// 	&.rate-decrease {
+	// 		padding: 0 5px;
+	// 	}
+	// }
 }
 .play_pause_btn {
 	.svg_play_pause {
@@ -102,10 +115,6 @@ body {
 		margin: 0 4px;
 	}
 }
-
-/* ==  Play/Pause == */
-
-/* ==  Mute/Unmute == */
 
 .mute_unmute_btn {
 	.svg_mute_unmute {
@@ -246,7 +255,6 @@ input[type="range"]:focus::-ms-fill-upper {
 .playback-control {
 	// width: calc(100% - 50px);
 	height: 180px;
-	width: 100%;
 	// background: #726d6d;
 	background: #00000034;
 	position: relative;
@@ -270,7 +278,7 @@ input[type="range"]:focus::-ms-fill-upper {
 	// 	content: "";
 	// }
 	& > div {
-		width: -webkit-fill-available;
+		// width: -webkit-fill-available;
 	}
 }
 
